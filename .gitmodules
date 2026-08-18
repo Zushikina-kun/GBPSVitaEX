@@ -1,0 +1,15 @@
+[submodule "vendor/gpsp"]
+	path = vendor/gpsp
+	url = https://github.com/libretro/gpsp.git
+
+[submodule "vendor/mgba"]
+	path = vendor/mgba
+	url = https://github.com/mgba-emu/mgba.git
+
+[submodule "vendor/TempGBA"]
+	path = vendor/TempGBA
+	url = https://github.com/PSP-Archive/TempGBA.git
+
+[submodule "vendor/FrogGBA"]
+	path = vendor/FrogGBA
+	url = https://github.com/tzubertowski/FrogGBA.git
