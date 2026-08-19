@@ -24,9 +24,3 @@ Thumbs.db
 
 # Keep the release VPK (tracked in git for GitHub Releases)
 !release/*.vpk
-
-# Vendor source trees are referenced as git submodules
-vendor/gpsp/
-vendor/mgba/
-vendor/TempGBA/
-vendor/FrogGBA/

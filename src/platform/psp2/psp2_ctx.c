@@ -25,6 +25,7 @@
 #include <psp2/power.h>
 #include <psp2/display.h>
 #include <psp2/gxm.h>
+#include <psp2/kernel/threadmgr.h>   /* sceKernelCreateThread / StartThread */
 #include <vita2d.h>
 #include <png.h>
 
@@ -290,50 +291,66 @@ void psp2_ctx_set_clock(int mhz) {
     scePowerSetArmClockFrequency(mhz);
 }
 
-bool psp2_ctx_screenshot(const char *path) {
-    /* Grab the current display framebuffer and encode it as PNG. */
-    SceDisplayFrameBuf fb;
-    fb.size = sizeof(SceDisplayFrameBuf);
-    if (sceDisplayGetFrameBuf(&fb, SCE_DISPLAY_SETBUF_NEXTFRAME) < 0)
-        return false;
-    if (!fb.base || fb.width == 0 || fb.height == 0)
-        return false;
+void psp2_ctx_set_vsync(bool enable) {
+    vita2d_set_vblank_wait(enable ? 1 : 0);
+}
 
-    FILE *f = fopen(path, "wb");
-    if (!f) return false;
+/* ──────────────────────────────────────────────────────────────────────────
+   Async screenshot
+   The PNG encode of a 960×544 BGRA8888 framebuffer takes ~60–100 ms —
+   doing it synchronously on the main thread drops one or two frames.
+   We copy the raw pixel data to a heap buffer, spin up a kernel thread,
+   and let it do the encode + file write in the background.
+   ────────────────────────────────────────────────────────────────────────── */
 
-    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING,
-                                              NULL, NULL, NULL);
-    if (!png) { fclose(f); return false; }
-    png_infop info = png_create_info_struct(png);
-    if (!info) { png_destroy_write_struct(&png, NULL); fclose(f); return false; }
+typedef struct {
+    uint8_t  *pixels;     /* heap-allocated BGRA8888 copy of the framebuffer */
+    uint32_t  width;
+    uint32_t  height;
+    uint32_t  pitch;      /* in pixels, not bytes */
+    char      path[512];
+} ScreenshotJob;
 
-    if (setjmp(png_jmpbuf(png))) {
-        png_destroy_write_struct(&png, &info);
+static int screenshot_thread_fn(SceSize sz, void *arg) {
+    (void)sz;
+    ScreenshotJob *job = (ScreenshotJob *)arg;
+
+    FILE *f = fopen(job->path, "wb");
+    if (!f) { free(job->pixels); free(job); sceKernelExitThread(1); return 1; }
+
+    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_infop   info = png ? png_create_info_struct(png) : NULL;
+
+    if (!png || !info || setjmp(png_jmpbuf(png))) {
+        if (png) png_destroy_write_struct(&png, info ? &info : NULL);
         fclose(f);
-        return false;
+        free(job->pixels);
+        free(job);
+        sceKernelExitThread(1);
+        return 1;
     }
 
     png_init_io(png, f);
     png_set_IHDR(png, info,
-                 fb.width, fb.height, 8,
+                 job->width, job->height, 8,
                  PNG_COLOR_TYPE_RGB,
                  PNG_INTERLACE_NONE,
                  PNG_COMPRESSION_TYPE_DEFAULT,
                  PNG_FILTER_TYPE_DEFAULT);
     png_write_info(png, info);
 
-    /* The framebuf is BGRA8888 — convert to RGB row by row */
-    uint8_t *row = malloc(fb.width * 3);
+    /* BGRA8888 → RGB888 row by row */
+    uint8_t *row = malloc(job->width * 3);
     if (row) {
-        const uint32_t *src = (const uint32_t *)fb.base;
-        for (unsigned y = 0; y < fb.height; y++) {
-            const uint32_t *line = src + y * fb.pitch;
-            for (unsigned x = 0; x < fb.width; x++) {
-                uint32_t px  = line[x];
-                row[x*3+0]   = (px >>  0) & 0xFF;  /* B → R (BGRA) */
-                row[x*3+1]   = (px >>  8) & 0xFF;
-                row[x*3+2]   = (px >> 16) & 0xFF;
+        const uint32_t *src = (const uint32_t *)job->pixels;
+        for (uint32_t y = 0; y < job->height; y++) {
+            const uint32_t *line = src + y * job->pitch;
+            for (uint32_t x = 0; x < job->width; x++) {
+                uint32_t px = line[x];
+                /* Vita framebuf is BGRA: B=bits[7:0] G=bits[15:8] R=bits[23:16] */
+                row[x*3+0] = (px >> 16) & 0xFF; /* R */
+                row[x*3+1] = (px >>  8) & 0xFF; /* G */
+                row[x*3+2] = (px >>  0) & 0xFF; /* B */
             }
             png_write_row(png, row);
         }
@@ -343,5 +360,49 @@ bool psp2_ctx_screenshot(const char *path) {
     png_write_end(png, NULL);
     png_destroy_write_struct(&png, &info);
     fclose(f);
+
+    free(job->pixels);
+    free(job);
+    sceKernelExitThread(0);
+    return 0;
+}
+
+bool psp2_ctx_screenshot(const char *path) {
+    /* Grab the current display framebuffer */
+    SceDisplayFrameBuf fb;
+    fb.size = sizeof(SceDisplayFrameBuf);
+    if (sceDisplayGetFrameBuf(&fb, SCE_DISPLAY_SETBUF_NEXTFRAME) < 0)
+        return false;
+    if (!fb.base || fb.width == 0 || fb.height == 0)
+        return false;
+
+    /* Copy pixel data immediately (framebuf may be overwritten next frame) */
+    size_t byte_size = fb.pitch * fb.height * 4; /* BGRA8888 */
+    uint8_t *pixels = malloc(byte_size);
+    if (!pixels) return false;
+    memcpy(pixels, fb.base, byte_size);
+
+    /* Build job struct */
+    ScreenshotJob *job = malloc(sizeof(ScreenshotJob));
+    if (!job) { free(pixels); return false; }
+    job->pixels = pixels;
+    job->width  = fb.width;
+    job->height = fb.height;
+    job->pitch  = fb.pitch;
+    strncpy(job->path, path, sizeof(job->path) - 1);
+    job->path[sizeof(job->path) - 1] = '\0';
+
+    /* Spawn background thread — SCE priority 0x10000100, stack 64 KB */
+    SceUID tid = sceKernelCreateThread("gbavitaex_screenshot",
+                                       screenshot_thread_fn,
+                                       0x10000100, 64 * 1024, 0, 0, NULL);
+    if (tid < 0) {
+        free(pixels);
+        free(job);
+        return false;
+    }
+    /* Pass job pointer as arg; thread frees it when done */
+    sceKernelStartThread(tid, sizeof(ScreenshotJob *), &job);
+    /* Don't join — we're fire-and-forget.  Thread cleans itself up. */
     return true;
 }

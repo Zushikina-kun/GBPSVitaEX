@@ -141,8 +141,8 @@ ux0:data/GBAVitaEX/
 ### Build
 
 ```bash
-# Clone the repo
-git clone https://github.com/Zushikina-kun/GBPSVitaEX.git
+# Clone the repo (submodules included automatically)
+git clone --recurse-submodules https://github.com/Zushikina-kun/GBPSVitaEX.git
 cd GBPSVitaEX
 
 # Build (clean)

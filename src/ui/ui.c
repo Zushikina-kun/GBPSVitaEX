@@ -147,12 +147,21 @@ void ui_mainloop(void) {
 
             emu_set_input(emu_buttons, lx, ly);
 
-            /* Run base frame + any fast-forward extra frames */
+            /* ── Fast-forward: disable vsync so swap_buffers doesn't block ── */
+            static bool s_ff_was_active = false;
+            if (g_emu.fast_forward != s_ff_was_active) {
+                psp2_ctx_set_vsync(!g_emu.fast_forward);
+                s_ff_was_active = g_emu.fast_forward;
+            }
+
+            /* Run base frame + any fast-forward extra frames.
+             * During FF we skip blitting intermediate frames — only the
+             * final frame is uploaded and presented, keeping GPU load low. */
             emu_run_frame();
             int extra = g_emu.fast_forward ? ff_extra_frames() : 0;
             for (int i = 0; i < extra; i++) {
                 emu_run_frame();
-                drain_gba_audio();   /* drain audio for extra frames too */
+                drain_gba_audio();
             }
             drain_gba_audio();
             fps_tick();
@@ -182,6 +191,9 @@ void ui_mainloop(void) {
 
         /* ── IN-GAME MENU ────────────────────────────────────────── */
         case UI_STATE_MENU: {
+            /* Restore vsync when menu opens (FF is implicitly off) */
+            psp2_ctx_set_vsync(true);
+            g_emu.fast_forward = false;
             MenuAction action = menu_update(emu_buttons);
             menu_draw();
             switch (action) {
@@ -198,6 +210,7 @@ void ui_mainloop(void) {
             case MENU_ACTION_LOAD_ROM:
                 emu_unload_rom();
                 rom_browser_reset();
+                psp2_ctx_set_vsync(true);  /* browser always vsync-locked */
                 s_state = UI_STATE_BROWSER;
                 g_emu.show_menu = false;
                 break;

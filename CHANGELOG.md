@@ -4,6 +4,36 @@ All notable changes to GBAVitaEX will be documented in this file.
 
 ---
 
+## [1.2.0] — 2026-08-19
+
+### Fixed
+
+- **Fast-forward vsync cap** — fast-forward was capped at 60 FPS because
+  `vita2d_swap_buffers()` internally waits for display vsync. When FF is
+  activated `vita2d_set_vblank_wait(0)` now disables vsync locking so the
+  CPU can run emulation frames as fast as hardware allows (up to 8× on
+  500 MHz). Vsync is restored immediately when FF is released or when the
+  menu opens. HUD accurately reflects the real achieved multiplier.
+
+- **Screenshot stutter eliminated** — PNG encoding of a full 960×544
+  framebuffer took 60–100 ms synchronously, dropping 4–6 frames. Screenshot
+  now copies the raw framebuffer immediately (< 1 ms), then spawns a
+  `SceKernelThread` to encode and write the PNG in the background. The main
+  emulation loop is never blocked.
+
+- **SCE_SYSMODULE_HTTPS removed** — was loaded at startup but never used.
+  Removed to cut startup time and reduce memory footprint.
+
+### Added
+
+- **Proper git submodule registration** — all four vendor repos (gpsp, mGBA,
+  TempGBA, FrogGBA) are now real git submodules tracked in `.gitmodules` at
+  pinned commits. Cloning with `git clone --recurse-submodules` now works
+  correctly and pulls all source dependencies automatically. No manual vendor
+  setup required.
+
+---
+
 ## [1.1.0] — 2026-08-19
 
 ### Fixed

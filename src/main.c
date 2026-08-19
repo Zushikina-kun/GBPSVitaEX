@@ -92,10 +92,10 @@ static void create_data_dirs(void) {
 }
 
 static void load_modules(void) {
-    /* Errors from these are non-fatal; if not available, networking/https
-     * features are simply unavailable. */
+    /* Load NET module — used for future networking features (RFU, etc.).
+     * Non-fatal: if unavailable the rest of the app still works fine. */
     sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
-    sceSysmoduleLoadModule(SCE_SYSMODULE_HTTPS);
+    /* Note: HTTPS intentionally not loaded — we have no HTTPS usage. */
 }
 
 int main(void) {

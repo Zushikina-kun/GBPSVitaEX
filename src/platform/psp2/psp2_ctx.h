@@ -54,5 +54,11 @@ bool     psp2_ctx_vbtn_pressed(uint32_t raw_sce, VitaButton btn);
 /* Set CPU clock (MHz: 41/83/111/166/222/333/444/500). */
 void psp2_ctx_set_clock(int mhz);
 
-/* Screenshot: save current framebuffer as PNG to path. */
+/* Control vsync wait on swap_buffers.
+ * enable=true  → normal 60 Hz locked presentation (default).
+ * enable=false → unlocked; vita2d_swap_buffers returns immediately.
+ *                Used during fast-forward to avoid being capped at 60 Hz. */
+void psp2_ctx_set_vsync(bool enable);
+
+/* Screenshot: save current framebuffer as PNG to path (async, non-blocking). */
 bool psp2_ctx_screenshot(const char *path);
