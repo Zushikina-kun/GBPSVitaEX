@@ -28,7 +28,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 #  App metadata
 # ─────────────────────────────────────────────────────────────────────────────
 set(VITA_APP_NAME  "GBVitaEX")
-set(VITA_TITLEID   "GBAVEX001")
+set(VITA_TITLEID   "GBVX00001")
 set(VITA_VERSION   "01.40")
 set(VITA_MKSFOEX_FLAGS "-d ATTRIBUTE2=12")
 
@@ -434,12 +434,8 @@ vita_create_self(GBVitaEX.self GBVitaEX.elf UNSAFE)
 vita_create_vpk(GBVitaEX.vpk ${VITA_TITLEID} GBVitaEX.self
     VERSION ${VITA_VERSION}
     NAME    ${VITA_APP_NAME}
-    # App icons and livearea
-    FILE sce_sys/icon0.png                            sce_sys/icon0.png
-    FILE sce_sys/livearea/contents/bg.png             sce_sys/livearea/contents/bg.png
-    FILE sce_sys/livearea/contents/startup.png        sce_sys/livearea/contents/startup.png
-    FILE sce_sys/livearea/contents/template.xml       sce_sys/livearea/contents/template.xml
-    # Note: Per-game overrides are compiled into gba_over.h (no separate file needed)
+    # Copy entire sce_sys directory — Vita requires specific PNG formats (palette-indexed 8-bit)
+    FILE sce_sys sce_sys
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
