@@ -4,6 +4,51 @@ All notable changes to GBAVitaEX will be documented in this file.
 
 ---
 
+## [1.3.0] — 2026-08-19
+
+### Added
+
+#### Fast-forward pitch correction (TDHS)
+- Audio no longer sounds chipmunk during fast-forward.
+- Uses Time-Domain Harmonic Scaling (TDHS) from [dbry/audio-stretch](https://github.com/dbry/audio-stretch) (BSD licence), a lightweight algorithm requiring only ~1 multiply + 2 adds per output sample — about 0.5 ms overhead at 444 MHz.
+- Pitch correction is togglable: **Settings → FF Pitch Correction** (On by default).
+- Works for all FF speeds from 1.25× to 8×. Above 4× the library uses dual-instance cascade mode automatically.
+- GB/GBC audio is unaffected (it runs in a separate thread and delivers at the correct pitch by design).
+
+#### GBA RFU Wireless Adapter multiplayer (LAN WiFi)
+- Pokémon Fire Red/Leaf Green/Emerald, Mario Golf, Megaman Battle Network 5/6, Mario Tennis, and other RFU-compatible games can now be played multiplayer over local WiFi.
+- Implemented via a custom UDP transport over SceNet — no RetroArch or internet relay needed.
+- One Vita acts as **Host** (player 1); others join as **Clients** via UDP broadcast discovery on the LAN.
+- Protocol: `[sender_id:2][dest_id:2][payload:N]` over UDP port 7354 (broadcast + unicast).
+- Working games (confirmed by davidgfnet): Pokémon series, Mario Golf, Megaman BN5/6.
+- Games with latency issues (racing/action): Digimon Racing, Shrek SuperSlam.
+- Maximum 4 clients + 1 host = 5 players (RFU hardware limit).
+- **Note:** same LAN subnet required. Internet play not supported without a relay server.
+
+#### GB/GBC single-device link cable
+- Two GB/GBC ROMs can be connected via a software link cable on a single Vita.
+- Both cores run in lock-step using mGBA's `GBSIOLockstep` infrastructure.
+- Enables Pokémon trading/battling between two games, Tetris two-player, etc.
+- Player 2's screen is accessible via `gb_link_get_p2_framebuffer()` — future UI will display it in a split-screen layout.
+- Access via menu (coming in next UI update): **Menu → Link Cable → Load P2 ROM**.
+
+#### Pause hotkey
+- **Hold L Trigger + R Trigger for 1 second** to toggle pause without opening the menu.
+- Paused state shown in HUD in red: `PAUSED  (hold L+R to resume)`.
+- Hotkey is automatically disabled if R Trigger is configured as the fast-forward button (to avoid conflicts).
+
+#### Per-game compatibility database (gba_over.h)
+- gpSP's full per-game override database (`gba_over.h`) is already **compiled in** — no separate file needed.
+- Contains idle-loop elimination targets, save type overrides (EEPROM, Flash 64K/128K), RTC flags, rumble flags, and RFU flags for 150+ GBA titles — applied automatically on ROM load.
+- Notable entries: Golden Sun 1/2 (translation gates), all Pokémon titles (Flash 128K + RTC + RFU), Drill Dozer (rumble), WarioWare Twisted (rumble), F-Zero (idle loop), Castlevania (idle loop).
+
+### Changed
+- HUD now shows `PAUSED` in red when paused, `>> X.Xx` with FPS during FF.
+- `stubs.c` cleaned up: `netpacket_send`, `netpacket_poll_receive`, `netplay_client_id`, `netplay_num_clients` moved to `rfu_vita_net.c` (real implementations).
+- `projectVersion` in `stubs.c` updated to `"1.3.0"`.
+
+---
+
 ## [1.2.0] — 2026-08-19
 
 ### Fixed

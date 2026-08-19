@@ -55,11 +55,12 @@ enum SettingID {
     S_FRAMESKIP,
     S_FF_SPEED,
     S_FF_BUTTON,
+    S_FF_PITCH,      /* new: pitch correction toggle */
     S_COLOR_CORRECT,
     S_INTERFRAME,
     S_AUDIO,
     S_DYNAREC,
-    S_KEYMAPPER,   /* enter key remapper sub-screen */
+    S_KEYMAPPER,
     S_COUNT
 };
 
@@ -70,6 +71,7 @@ static const char *setting_labels[S_COUNT] = {
     [S_FRAMESKIP]    = "Frameskip",
     [S_FF_SPEED]     = "Fast-Forward Speed",
     [S_FF_BUTTON]    = "Fast-Forward Button",
+    [S_FF_PITCH]     = "FF Pitch Correction",
     [S_COLOR_CORRECT]= "GBA Colour Correction",
     [S_INTERFRAME]   = "Interframe Blending",
     [S_AUDIO]        = "Audio",
@@ -98,6 +100,8 @@ static void get_value_str(int id, char *buf, size_t sz) {
         snprintf(buf, sz, "%.2gx  (%d%%)", g_emu.ff_speed_pct/100.0, g_emu.ff_speed_pct); break;
     case S_FF_BUTTON:
         snprintf(buf, sz, "%s", ff_btn_names[ff_btn_idx_for(g_emu.ff_button)]); break;
+    case S_FF_PITCH:
+        snprintf(buf, sz, g_emu.ff_pitch_correct ? "On" : "Off"); break;
     case S_COLOR_CORRECT:
         snprintf(buf, sz, g_emu.color_correct    ? "On" : "Off"); break;
     case S_INTERFRAME:
@@ -157,6 +161,8 @@ bool settings_update(uint32_t buttons) {
         if (right && idx < FF_BTN_OPT_COUNT-1) g_emu.ff_button = ff_btn_opts[++idx];
         if (left  && idx > 0)                  g_emu.ff_button = ff_btn_opts[--idx];
         break; }
+    case S_FF_PITCH:
+        if (left || right || enter) g_emu.ff_pitch_correct = !g_emu.ff_pitch_correct; break;
     case S_COLOR_CORRECT:
         if (left || right || enter) g_emu.color_correct = !g_emu.color_correct; break;
     case S_INTERFRAME:

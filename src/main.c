@@ -77,8 +77,9 @@ static void init_global_state(void) {
     g_emu.screen_mode      = 0;
     g_emu.audio_enabled    = true;
     g_emu.audio_volume     = 80;
-    g_emu.ff_speed_pct     = 200;    /* default fast-forward = 2× */
-    g_emu.ff_button        = VBTN_R1; /* R trigger = fast-forward */
+    g_emu.ff_speed_pct     = 200;
+    g_emu.ff_button        = VBTN_R1;
+    g_emu.ff_pitch_correct = true;   /* pitch correction on by default */
     emu_reset_key_map();
 }
 

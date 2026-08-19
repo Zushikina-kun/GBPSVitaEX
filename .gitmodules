@@ -1,3 +1,7 @@
+[submodule "vendor/audio-stretch"]
+	path = vendor/audio-stretch
+	url = https://github.com/dbry/audio-stretch.git
+
 [submodule "vendor/gpsp"]
 	path = vendor/gpsp
 	url = https://github.com/libretro/gpsp.git

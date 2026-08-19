@@ -57,7 +57,9 @@ static void drain_gba_audio(void) {
     if (g_emu.active_core != CORE_GBA) return;
     int got = emu_drain_audio(s_audio_buf, AUDIO_DRAIN_FRAMES);
     if (got > 0 && g_emu.audio_enabled)
-        audio_output_submit(s_audio_buf, got);
+        audio_output_submit_ff(s_audio_buf, got,
+                               g_emu.fast_forward && g_emu.ff_pitch_correct,
+                               g_emu.ff_speed_pct / 100.0f);
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -90,6 +92,10 @@ typedef enum {
 static UIState s_state     = UI_STATE_BROWSER;
 static int     s_menu_hold = 0;
 #define MENU_HOLD_FRAMES 30
+
+/* L+R held for 60 frames (1 second at 60fps) = pause toggle */
+static int s_pause_hold = 0;
+#define PAUSE_HOLD_FRAMES 60
 
 void ui_mainloop(void) {
     audio_output_init(44100, AUDIO_DRAIN_FRAMES);
@@ -147,6 +153,19 @@ void ui_mainloop(void) {
 
             emu_set_input(emu_buttons, lx, ly);
 
+            /* ── Pause hotkey: L + R held for 1 second ── */
+            if ((raw_buttons & SCE_CTRL_LTRIGGER) &&
+                (raw_buttons & SCE_CTRL_RTRIGGER) &&
+                g_emu.ff_button != VBTN_R1) {
+                /* Only if R1 isn't the FF button, to avoid conflict */
+                if (++s_pause_hold >= PAUSE_HOLD_FRAMES) {
+                    s_pause_hold = 0;
+                    g_emu.paused = !g_emu.paused;
+                }
+            } else {
+                s_pause_hold = 0;
+            }
+
             /* ── Fast-forward: disable vsync so swap_buffers doesn't block ── */
             static bool s_ff_was_active = false;
             if (g_emu.fast_forward != s_ff_was_active) {
@@ -178,13 +197,16 @@ void ui_mainloop(void) {
             /* HUD overlay */
             if (g_pgf_font) {
                 char hud[64];
-                if (g_emu.fast_forward)
+                if (g_emu.paused)
+                    snprintf(hud, sizeof(hud), "PAUSED  (hold L+R to resume)");
+                else if (g_emu.fast_forward)
                     snprintf(hud, sizeof(hud), "%.1f fps  >> %.1fx",
                              g_emu.fps, g_emu.ff_speed_pct / 100.0f);
                 else
                     snprintf(hud, sizeof(hud), "%.1f fps", g_emu.fps);
                 vita2d_pgf_draw_text(g_pgf_font, VITA_SCREEN_W - 200, 20,
-                                     RGBA8(255, 255, 0, 200), 0.9f, hud);
+                                     g_emu.paused ? RGBA8(255,80,80,255) : RGBA8(255,255,0,200),
+                                     0.9f, hud);
             }
             break;
         }

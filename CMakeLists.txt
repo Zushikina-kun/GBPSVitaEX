@@ -29,7 +29,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 # ─────────────────────────────────────────────────────────────────────────────
 set(VITA_APP_NAME  "GBAVitaEX")
 set(VITA_TITLEID   "GBAVEX001")
-set(VITA_VERSION   "01.20")
+set(VITA_VERSION   "01.30")
 set(VITA_MKSFOEX_FLAGS "-d ATTRIBUTE2=12")
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -111,6 +111,8 @@ include_directories(
     "${VENDOR_MGBA}/include"
     "${VENDOR_MGBA}/src"
     "${VENDOR_MGBA}/src/third-party/inih"
+    # audio-stretch (TDHS pitch correction)
+    "${CMAKE_SOURCE_DIR}/vendor/audio-stretch"
     # VitaSDK headers (toolchain usually adds these; explicit for IDE support)
     "$ENV{VITASDK}/arm-vita-eabi/include"
 )
@@ -191,6 +193,7 @@ foreach(_f
     "${CMAKE_SOURCE_DIR}/src/gba/gba_engine.c"
     "${CMAKE_SOURCE_DIR}/src/core/stubs.c"
     "${CMAKE_SOURCE_DIR}/src/cheats/cheat_gba.c"
+    "${CMAKE_SOURCE_DIR}/src/core/rfu_vita_net.c"
 )
     set_source_files_properties(${_f}
         PROPERTIES COMPILE_FLAGS "${GPSP_FORCED_INCLUDE} -Wno-sign-compare -Wno-unused-variable")
@@ -321,6 +324,13 @@ set(APP_SOURCES
     "${CMAKE_SOURCE_DIR}/src/cheats/cheat_mgr.c"
     "${CMAKE_SOURCE_DIR}/src/cheats/cheat_gba.c"
     "${CMAKE_SOURCE_DIR}/src/cheats/cheat_gb.c"
+    # GB link cable (single-device two-core lockstep)
+    "${CMAKE_SOURCE_DIR}/src/gb/gb_link.c"
+    # GBA RFU WiFi multiplayer (Vita UDP transport)
+    "${CMAKE_SOURCE_DIR}/src/core/rfu_vita_net.c"
+    # Audio time-stretch (TDHS) for fast-forward pitch correction
+    # BSD licensed: https://github.com/dbry/audio-stretch
+    "${CMAKE_SOURCE_DIR}/vendor/audio-stretch/stretch.c"
     # ROM browser + in-game menu UI
     "${CMAKE_SOURCE_DIR}/src/ui/ui.c"
     "${CMAKE_SOURCE_DIR}/src/ui/rom_browser.c"
@@ -408,7 +418,7 @@ target_link_libraries(GBAVitaEX.elf
 #  Compiler definitions per target (in addition to global ones)
 # ─────────────────────────────────────────────────────────────────────────────
 target_compile_definitions(GBAVitaEX.elf PRIVATE
-    GBAVITAEX_VERSION="1.2.0"
+    GBAVITAEX_VERSION="1.3.0"
     SAVE_PATH="ux0:data/GBAVitaEX/saves"
     STATE_PATH="ux0:data/GBAVitaEX/states"
     BIOS_PATH="ux0:data/GBAVitaEX"
@@ -429,8 +439,7 @@ vita_create_vpk(GBAVitaEX.vpk ${VITA_TITLEID} GBAVitaEX.self
     FILE sce_sys/livearea/contents/bg.png             sce_sys/livearea/contents/bg.png
     FILE sce_sys/livearea/contents/startup.png        sce_sys/livearea/contents/startup.png
     FILE sce_sys/livearea/contents/template.xml       sce_sys/livearea/contents/template.xml
-    # Note: regular.pgf is optional — vita2d_load_default_pgf() uses the
-    # system font at runtime.  Add your own PGF here to override it.
+    # Note: Per-game overrides are compiled into gba_over.h (no separate file needed)
 )
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -38,6 +38,7 @@ bool config_save(void) {
     fprintf(f, "volume=%d\n",          g_emu.audio_volume);
     fprintf(f, "ff_speed=%d\n",        g_emu.ff_speed_pct);
     fprintf(f, "ff_button=%d\n",       g_emu.ff_button);
+    fprintf(f, "ff_pitch=%d\n",        (int)g_emu.ff_pitch_correct);
 
     fprintf(f, "[keymap]\n");
     /* key_map indexed by VitaButton */
@@ -94,6 +95,7 @@ bool config_load(void) {
             else if (!strcmp(key,"volume"))         g_emu.audio_volume     = (v>=0&&v<=100) ? v : 80;
             else if (!strcmp(key,"ff_speed"))       g_emu.ff_speed_pct     = (v>=FF_SPEED_MIN&&v<=FF_SPEED_MAX) ? v : 200;
             else if (!strcmp(key,"ff_button"))      g_emu.ff_button        = (v>=-1&&v<VBTN_COUNT) ? v : VBTN_R1;
+            else if (!strcmp(key,"ff_pitch"))       g_emu.ff_pitch_correct = v != 0;
         } else if (section == 2) {
             for (int i = 0; i < VBTN_COUNT; i++) {
                 if (!strcmp(key, vbtn_keys[i])) {

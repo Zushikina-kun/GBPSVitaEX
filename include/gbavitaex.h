@@ -11,9 +11,9 @@
    Versioning
    ────────────────────────────────────────────── */
 #define GBAVITAEX_VER_MAJOR  1
-#define GBAVITAEX_VER_MINOR  2
+#define GBAVITAEX_VER_MINOR  3
 #define GBAVITAEX_VER_PATCH  0
-#define GBAVITAEX_VERSION_STR "1.2.0"
+#define GBAVITAEX_VERSION_STR "1.3.0"
 
 /* ──────────────────────────────────────────────
    Path constants  (overridable at cmake time)
@@ -135,9 +135,8 @@ typedef struct GBAVitaEXState {
 
     /* ── Fast-forward ── */
     int       ff_speed_pct;     /* 125–800, step 25 (percentage of normal) */
-    /* Which Vita physical button triggers fast-forward (VitaButton index).
-     * -1 = disabled, default = VBTN_R1 */
-    int       ff_button;
+    int       ff_button;        /* VitaButton index, -1=disabled */
+    bool      ff_pitch_correct; /* true = TDHS pitch preservation during FF */
 
     /* ── Audio settings ── */
     bool      audio_enabled;
