@@ -74,8 +74,16 @@ static bool init_jit_caches(void) {
     rom_translation_ptr   = rom_translation_cache;
     ram_translation_ptr   = ram_translation_cache;
 
-    /* Open VM domain so the CPU can execute our JIT output */
-    sceKernelOpenVMDomain();
+    /* Open VM domain so the CPU can execute our JIT output.
+     * On Ensō / HENkaku this should always succeed. */
+    int vmd = sceKernelOpenVMDomain();
+    if (vmd < 0) {
+        fprintf(stderr, "[gba_engine] sceKernelOpenVMDomain failed: 0x%08X"
+                        " — falling back to interpreter\n", vmd);
+        sceKernelFreeMemBlock(s_jit_block);
+        s_jit_block = -1;
+        return false;
+    }
 
     dynarec_enable = 1;
     return true;
@@ -293,7 +301,13 @@ bool gba_engine_load_state(const char *path) {
         ok = fread(buf, 1, GBA_STATE_MEM_SIZE, f) == GBA_STATE_MEM_SIZE;
         fclose(f);
     }
-    if (ok) ok = gba_load_state(buf);
+    if (ok) {
+        ok = gba_load_state(buf);
+        /* Fix known gpSP issue: loading a save state kills audio because
+         * PSG frequency step tables are not rebuilt from restored state.
+         * sound_frequency_changed() recomputes all derived audio constants. */
+        if (ok) sound_frequency_changed();
+    }
     free(buf);
     return ok;
 }

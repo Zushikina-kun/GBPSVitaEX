@@ -227,34 +227,63 @@ void psp2_ctx_end_frame(void) {
    Input
    ────────────────────────────────────────────────────────────────────────── */
 
-/* Map SCE_CTRL_* → EMU_KEY_* */
-uint32_t psp2_ctx_poll_input(uint8_t *lx_out, uint8_t *ly_out) {
+/* Map a VitaButton enum → its SCE_CTRL_* bitmask */
+static const uint32_t s_sce_mask[VBTN_COUNT] = {
+    [VBTN_CROSS]    = SCE_CTRL_CROSS,
+    [VBTN_CIRCLE]   = SCE_CTRL_CIRCLE,
+    [VBTN_SQUARE]   = SCE_CTRL_SQUARE,
+    [VBTN_TRIANGLE] = SCE_CTRL_TRIANGLE,
+    [VBTN_START]    = SCE_CTRL_START,
+    [VBTN_SELECT]   = SCE_CTRL_SELECT,
+    [VBTN_UP]       = SCE_CTRL_UP,
+    [VBTN_DOWN]     = SCE_CTRL_DOWN,
+    [VBTN_LEFT]     = SCE_CTRL_LEFT,
+    [VBTN_RIGHT]    = SCE_CTRL_RIGHT,
+    [VBTN_L1]       = SCE_CTRL_LTRIGGER,
+    [VBTN_R1]       = SCE_CTRL_RTRIGGER,
+    [VBTN_L2]       = 0,  /* back-touch: handled separately */
+    [VBTN_R2]       = 0,
+};
+
+bool psp2_ctx_vbtn_pressed(uint32_t raw_sce, VitaButton btn) {
+    if ((int)btn < 0 || btn >= VBTN_COUNT) return false;
+    uint32_t mask = s_sce_mask[btn];
+    if (!mask) return false;
+    return (raw_sce & mask) != 0;
+}
+
+uint32_t psp2_ctx_remap_buttons(uint32_t raw_sce) {
+    uint32_t result = 0;
+    for (int i = 0; i < VBTN_COUNT; i++) {
+        uint32_t mask = s_sce_mask[i];
+        if (mask && (raw_sce & mask))
+            result |= g_emu.key_map[i];
+    }
+    return result;
+}
+
+uint32_t psp2_ctx_poll_raw(uint8_t *lx_out, uint8_t *ly_out) {
     SceCtrlData pad;
     sceCtrlPeekBufferPositiveExt2(0, &pad, 1);
-
-    uint32_t keys = 0;
-    if (pad.buttons & SCE_CTRL_CROSS)    keys |= EMU_KEY_A;
-    if (pad.buttons & SCE_CTRL_CIRCLE)   keys |= EMU_KEY_B;
-    if (pad.buttons & SCE_CTRL_SELECT)   keys |= EMU_KEY_SELECT;
-    if (pad.buttons & SCE_CTRL_START)    keys |= EMU_KEY_START;
-    if (pad.buttons & SCE_CTRL_RIGHT)    keys |= EMU_KEY_RIGHT;
-    if (pad.buttons & SCE_CTRL_LEFT)     keys |= EMU_KEY_LEFT;
-    if (pad.buttons & SCE_CTRL_UP)       keys |= EMU_KEY_UP;
-    if (pad.buttons & SCE_CTRL_DOWN)     keys |= EMU_KEY_DOWN;
-    if (pad.buttons & SCE_CTRL_RTRIGGER) keys |= EMU_KEY_R;
-    if (pad.buttons & SCE_CTRL_LTRIGGER) keys |= EMU_KEY_L;
-
-    /* D-pad from analog left stick if digital d-pad is neutral */
-    if (!(keys & (EMU_KEY_RIGHT|EMU_KEY_LEFT|EMU_KEY_UP|EMU_KEY_DOWN))) {
-        if (pad.lx > 192)  keys |= EMU_KEY_RIGHT;
-        if (pad.lx < 64)   keys |= EMU_KEY_LEFT;
-        if (pad.ly > 192)  keys |= EMU_KEY_DOWN;
-        if (pad.ly < 64)   keys |= EMU_KEY_UP;
-    }
-
     if (lx_out) *lx_out = pad.lx;
     if (ly_out) *ly_out = pad.ly;
-    return keys;
+    return pad.buttons;
+}
+
+/* Legacy: poll + remap in one call */
+uint32_t psp2_ctx_poll_input(uint8_t *lx_out, uint8_t *ly_out) {
+    uint32_t raw = psp2_ctx_poll_raw(lx_out, ly_out);
+    uint32_t mapped = psp2_ctx_remap_buttons(raw);
+
+    /* Analog stick D-pad fallback when no digital d-pad mapped */
+    uint8_t lx = lx_out ? *lx_out : 128;
+    uint8_t ly = ly_out ? *ly_out : 128;
+    if (lx > 192) mapped |= EMU_KEY_RIGHT;
+    if (lx < 64)  mapped |= EMU_KEY_LEFT;
+    if (ly > 192) mapped |= EMU_KEY_DOWN;
+    if (ly < 64)  mapped |= EMU_KEY_UP;
+
+    return mapped;
 }
 
 void psp2_ctx_set_clock(int mhz) {

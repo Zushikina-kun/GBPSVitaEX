@@ -29,7 +29,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 # ─────────────────────────────────────────────────────────────────────────────
 set(VITA_APP_NAME  "GBAVitaEX")
 set(VITA_TITLEID   "GBAVEX001")
-set(VITA_VERSION   "01.00")
+set(VITA_VERSION   "01.10")
 set(VITA_MKSFOEX_FLAGS "-d ATTRIBUTE2=12")
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -305,6 +305,8 @@ set(APP_SOURCES
     "${CMAKE_SOURCE_DIR}/src/core/stubs.c"
     # Core glue: ROM detect, core dispatch, frame loop
     "${CMAKE_SOURCE_DIR}/src/core/emu_core.c"
+    # Config persistence (INI save/load)
+    "${CMAKE_SOURCE_DIR}/src/core/config.c"
     # GBA engine wrapper (strips libretro, drives gpSP directly)
     "${CMAKE_SOURCE_DIR}/src/gba/gba_engine.c"
     # GB/GBC engine wrapper (drives mGBA GB core)
@@ -406,7 +408,7 @@ target_link_libraries(GBAVitaEX.elf
 #  Compiler definitions per target (in addition to global ones)
 # ─────────────────────────────────────────────────────────────────────────────
 target_compile_definitions(GBAVitaEX.elf PRIVATE
-    GBAVITAEX_VERSION="1.0.0"
+    GBAVITAEX_VERSION="1.1.0"
     SAVE_PATH="ux0:data/GBAVitaEX/saves"
     STATE_PATH="ux0:data/GBAVitaEX/states"
     BIOS_PATH="ux0:data/GBAVitaEX"

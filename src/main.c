@@ -1,17 +1,17 @@
 /* GBAVitaEX — src/main.c
  * PSVita application entry point.
- * Initialises the platform (vita2d, audio, input), then hands off to
- * the UI / emulation loop.
  */
 
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/sysmem.h>
+/* sceKernelPowerTick is in processmgr.h, already included above */
+#include <psp2/power.h>
 #include <psp2/sysmodule.h>
 #include <psp2/appmgr.h>
 #include <psp2/ctrl.h>
 #include <psp2/touch.h>
 #include <psp2/apputil.h>
-#include <psp2/io/fcntl.h>   /* sceIoMkdir */
+#include <psp2/io/fcntl.h>       /* sceIoMkdir */
 #include <vita2d.h>
 
 #include <stdio.h>
@@ -23,29 +23,65 @@
 #include "ui/ui.h"
 #include "core/emu_core.h"
 
-/* ── Newlib heap ── */
-unsigned int _newlib_heap_size_user = 128 * 1024 * 1024; /* 128 MB */
+/* ── Newlib heap — 128 MB for ROM buffers, JIT cache, audio, textures ── */
+unsigned int _newlib_heap_size_user = 128 * 1024 * 1024;
 
-/* Global emulator state */
-GBAVitaEXState g_emu = {
-    .active_core      = CORE_NONE,
-    .running          = false,
-    .paused           = false,
-    .show_menu        = false,
-    .fast_forward     = false,
-    .fps              = 0.0f,
-    .frame_count      = 0,
-    .cpu_clock_mhz    = 444,
-    .dynarec_enabled  = true,
-    .color_correct    = true,
-    .interframe_blend = false,
-    .frameskip        = 0,
-    .screen_mode      = 0,    /* aspect-correct by default */
-    .audio_enabled    = true,
-    .audio_volume     = 80,
+/* ── Physical button name strings ── */
+const char * const g_vbtn_names[VBTN_COUNT] = {
+    [VBTN_CROSS]    = "Cross",
+    [VBTN_CIRCLE]   = "Circle",
+    [VBTN_SQUARE]   = "Square",
+    [VBTN_TRIANGLE] = "Triangle",
+    [VBTN_START]    = "Start",
+    [VBTN_SELECT]   = "Select",
+    [VBTN_UP]       = "Up",
+    [VBTN_DOWN]     = "Down",
+    [VBTN_LEFT]     = "Left",
+    [VBTN_RIGHT]    = "Right",
+    [VBTN_L1]       = "L Trigger",
+    [VBTN_R1]       = "R Trigger",
+    [VBTN_L2]       = "Back-Touch L",
+    [VBTN_R2]       = "Back-Touch R",
 };
 
-/* ── Create required data directories ── */
+/* ── Global emulator state ── */
+GBAVitaEXState g_emu;
+
+/* Apply the default button mapping (GBA layout on Vita) */
+void emu_reset_key_map(void) {
+    for (int i = 0; i < VBTN_COUNT; i++) g_emu.key_map[i] = 0;
+    g_emu.key_map[VBTN_CROSS]    = EMU_KEY_A;
+    g_emu.key_map[VBTN_CIRCLE]   = EMU_KEY_B;
+    g_emu.key_map[VBTN_SQUARE]   = EMU_KEY_B;     /* Square also = B by default */
+    g_emu.key_map[VBTN_TRIANGLE] = 0;             /* unmapped */
+    g_emu.key_map[VBTN_START]    = EMU_KEY_START;
+    g_emu.key_map[VBTN_SELECT]   = EMU_KEY_SELECT;
+    g_emu.key_map[VBTN_UP]       = EMU_KEY_UP;
+    g_emu.key_map[VBTN_DOWN]     = EMU_KEY_DOWN;
+    g_emu.key_map[VBTN_LEFT]     = EMU_KEY_LEFT;
+    g_emu.key_map[VBTN_RIGHT]    = EMU_KEY_RIGHT;
+    g_emu.key_map[VBTN_L1]       = EMU_KEY_L;
+    g_emu.key_map[VBTN_R1]       = EMU_KEY_R;
+    g_emu.key_map[VBTN_L2]       = 0;
+    g_emu.key_map[VBTN_R2]       = 0;
+}
+
+static void init_global_state(void) {
+    memset(&g_emu, 0, sizeof(g_emu));
+    g_emu.active_core      = CORE_NONE;
+    g_emu.cpu_clock_mhz    = 444;
+    g_emu.dynarec_enabled  = true;
+    g_emu.color_correct    = true;
+    g_emu.interframe_blend = false;
+    g_emu.frameskip        = 0;
+    g_emu.screen_mode      = 0;
+    g_emu.audio_enabled    = true;
+    g_emu.audio_volume     = 80;
+    g_emu.ff_speed_pct     = 200;    /* default fast-forward = 2× */
+    g_emu.ff_button        = VBTN_R1; /* R trigger = fast-forward */
+    emu_reset_key_map();
+}
+
 static void create_data_dirs(void) {
     sceIoMkdir("ux0:data/GBAVitaEX",             0777);
     sceIoMkdir("ux0:data/GBAVitaEX/roms",         0777);
@@ -55,31 +91,27 @@ static void create_data_dirs(void) {
     sceIoMkdir("ux0:data/GBAVitaEX/cheats",       0777);
 }
 
-/* ── Load optional system modules ── */
 static void load_modules(void) {
+    /* Errors from these are non-fatal; if not available, networking/https
+     * features are simply unavailable. */
     sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
     sceSysmoduleLoadModule(SCE_SYSMODULE_HTTPS);
-    /* Motion/gyro sampling is started on-demand when a ROM needs it,
-     * not as a sysmodule (it's built into the firmware). */
 }
 
 int main(void) {
-    /* ── System setup ── */
+    init_global_state();
     load_modules();
     create_data_dirs();
 
-    /* Controller sampling: extended for analog + second controller */
+    /* Load saved settings; if absent the defaults set above are used */
+    config_load();
+
     sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
     sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
     sceTouchSetSamplingState(SCE_TOUCH_PORT_BACK,  SCE_TOUCH_SAMPLING_STATE_START);
 
-    /* ── Platform context (vita2d + audio thread) ── */
     psp2_ctx_init();
-
-    /* ── UI main loop: ROM browser → emulation → menu ── */
     ui_mainloop();
-
-    /* ── Teardown ── */
     emu_core_shutdown();
     psp2_ctx_shutdown();
 

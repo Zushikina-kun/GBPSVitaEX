@@ -2,7 +2,45 @@
 
 All notable changes to GBAVitaEX will be documented in this file.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+---
+
+## [1.1.0] — 2026-08-19
+
+### Fixed
+- **Save state audio silence** — after loading a GBA save state, audio was dead. Fixed by calling `sound_frequency_changed()` after `gba_load_state()` to rebuild PSG frequency step tables from restored state. This was a known upstream gpSP issue confirmed in the libretro/gpsp GitHub tracker.
+- **Vita auto-suspend during gameplay** — the Vita's watchdog was never ticked, causing the screen to dim and the system to sleep mid-game. `sceKernelPowerTick(SCE_KERNEL_POWER_TICK_DISABLE_AUTO_SUSPEND)` is now called every frame.
+- **JIT VM domain failure silent crash** — `sceKernelOpenVMDomain()` return value was not checked. It now gracefully falls back to the interpreter if the call fails (e.g. on unusual CFW configs).
+
+### Added
+
+#### Fast-Forward
+- Configurable fast-forward speed: **1.25× to 8×** in 0.25× steps
+- Activated by holding the configured button (default: R Trigger)
+- Speed shown in HUD as `XX.X fps  >> X.Xx` when active
+- Interframe blending is automatically disabled during fast-forward to reduce blur
+- Set via Settings → **Fast-Forward Speed** (slider: 125% – 800%)
+- Trigger button configurable: Settings → **Fast-Forward Button** (Off / R Trigger / Back-Touch L / Back-Touch R / Triangle)
+
+#### Button Remapping
+- Every GBA/GB button (A, B, Select, Start, Up, Down, Left, Right, L, R) can be remapped to any Vita physical button
+- Access via **Settings → Button Remapping**
+- On the remapper screen:
+  - **Up/Down** — select which GBA button to remap
+  - **Cross** — start listening for a Vita button press to assign
+  - **Triangle** — clear the current assignment
+  - **Square** — reset ALL bindings to defaults
+  - **Circle** — go back
+- Multiple Vita buttons can map to the same GBA button
+- Default mapping: Cross=A, Circle=B, Square=B, L=L, R=R, Start=Start, Select=Select, D-Pad=D-Pad
+
+#### Persistent Settings
+- All settings (clock, screen mode, volume, frameskip, FF speed, FF button, colour correction, interframe blend, audio, dynarec, button map) are saved to `ux0:data/GBAVitaEX/config.ini` on exit or when leaving the settings screen
+- Automatically loaded on next launch
+- Plain INI format — can be edited manually with a text editor
+
+### Changed
+- HUD overlay now shows fast-forward indicator with speed multiplier
+- Version bumped to 1.1.0
 
 ---
 

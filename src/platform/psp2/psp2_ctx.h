@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <vita2d.h>
+#include "gbavitaex.h"   /* VitaButton, EMU_KEY_*, g_emu */
 
 /* Screen scaling modes */
 typedef enum {
@@ -37,8 +38,18 @@ void psp2_ctx_blit(const uint16_t *pixels, int w, int h,
 /* End the vita2d frame and present. */
 void psp2_ctx_end_frame(void);
 
-/* Poll Vita controls → unified EMU_KEY_* bitmask + raw analog. */
+/* Poll Vita controls → unified EMU_KEY_* bitmask + raw analog.
+ * Applies button remapping from g_emu.key_map[]. */
 uint32_t psp2_ctx_poll_input(uint8_t *lx_out, uint8_t *ly_out);
+
+/* Poll raw SCE_CTRL_* bitmask (no remapping) + analog. */
+uint32_t psp2_ctx_poll_raw(uint8_t *lx_out, uint8_t *ly_out);
+
+/* Convert raw SCE_CTRL_* bitmask → EMU_KEY_* using g_emu.key_map[]. */
+uint32_t psp2_ctx_remap_buttons(uint32_t raw_sce);
+
+/* Test whether a specific VitaButton is pressed in a raw bitmask. */
+bool     psp2_ctx_vbtn_pressed(uint32_t raw_sce, VitaButton btn);
 
 /* Set CPU clock (MHz: 41/83/111/166/222/333/444/500). */
 void psp2_ctx_set_clock(int mhz);
