@@ -9,6 +9,11 @@ typedef enum {
     MENU_ACTION_LOAD_ROM,
     MENU_ACTION_SETTINGS,
     MENU_ACTION_SCREENSHOT,
+    MENU_ACTION_RFU_HOST,    /* start RFU WiFi multiplayer as host */
+    MENU_ACTION_RFU_CLIENT,  /* join RFU WiFi multiplayer as client */
+    MENU_ACTION_RFU_STOP,    /* stop RFU multiplayer */
+    MENU_ACTION_LINK_START,  /* start GB link cable (prompts for P2 ROM) */
+    MENU_ACTION_LINK_STOP,   /* stop GB link cable */
     MENU_ACTION_EXIT,
 } MenuAction;
 

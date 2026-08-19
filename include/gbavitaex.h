@@ -11,9 +11,9 @@
    Versioning
    ────────────────────────────────────────────── */
 #define GBAVITAEX_VER_MAJOR  1
-#define GBAVITAEX_VER_MINOR  3
+#define GBAVITAEX_VER_MINOR  4
 #define GBAVITAEX_VER_PATCH  0
-#define GBAVITAEX_VERSION_STR "1.3.0"
+#define GBAVITAEX_VERSION_STR "1.4.0"
 
 /* ──────────────────────────────────────────────
    Path constants  (overridable at cmake time)

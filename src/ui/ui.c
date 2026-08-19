@@ -15,6 +15,7 @@
 #include "settings.h"
 #include "gbavitaex.h"
 #include "../core/emu_core.h"
+#include "../gb/gb_link.h"
 #include "../platform/psp2/psp2_ctx.h"
 #include "../audio/audio_output.h"
 
@@ -153,11 +154,14 @@ void ui_mainloop(void) {
 
             emu_set_input(emu_buttons, lx, ly);
 
-            /* ── Pause hotkey: L + R held for 1 second ── */
-            if ((raw_buttons & SCE_CTRL_LTRIGGER) &&
-                (raw_buttons & SCE_CTRL_RTRIGGER) &&
-                g_emu.ff_button != VBTN_R1) {
-                /* Only if R1 isn't the FF button, to avoid conflict */
+            /* ── Pause hotkey: L + R held for 1 second ──
+             * Disabled if either trigger is configured as the FF button,
+             * to avoid simultaneously pausing and fast-forwarding. */
+            bool l_is_ff = (g_emu.ff_button == VBTN_L1);
+            bool r_is_ff = (g_emu.ff_button == VBTN_R1);
+            if (!l_is_ff && !r_is_ff &&
+                (raw_buttons & SCE_CTRL_LTRIGGER) &&
+                (raw_buttons & SCE_CTRL_RTRIGGER)) {
                 if (++s_pause_hold >= PAUSE_HOLD_FRAMES) {
                     s_pause_hold = 0;
                     g_emu.paused = !g_emu.paused;
@@ -216,6 +220,7 @@ void ui_mainloop(void) {
             /* Restore vsync when menu opens (FF is implicitly off) */
             psp2_ctx_set_vsync(true);
             g_emu.fast_forward = false;
+            s_pause_hold = 0;  /* reset pause hold counter on menu open */
             MenuAction action = menu_update(emu_buttons);
             menu_draw();
             switch (action) {
@@ -232,12 +237,32 @@ void ui_mainloop(void) {
             case MENU_ACTION_LOAD_ROM:
                 emu_unload_rom();
                 rom_browser_reset();
-                psp2_ctx_set_vsync(true);  /* browser always vsync-locked */
+                psp2_ctx_set_vsync(true);
                 s_state = UI_STATE_BROWSER;
                 g_emu.show_menu = false;
                 break;
             case MENU_ACTION_SETTINGS:
                 s_state = UI_STATE_SETTINGS;
+                break;
+            case MENU_ACTION_LINK_START:
+                /* Start GB link cable — both players use the same ROM path.
+                 * For different-version trading (e.g. Red+Blue) the user
+                 * would need to select a second ROM; that UI is deferred.
+                 * For now same-ROM works for most link cable use cases. */
+                if (!gb_link_active()) {
+                    char p2_save[512];
+                    snprintf(p2_save, sizeof(p2_save), "%s.p2.sav",
+                             g_emu.save_path);
+                    gb_link_start(g_emu.rom_path, g_emu.save_path,
+                                  g_emu.rom_path, p2_save);
+                }
+                s_state = UI_STATE_RUNNING;
+                g_emu.show_menu = false;
+                break;
+            case MENU_ACTION_LINK_STOP:
+                gb_link_stop();
+                s_state = UI_STATE_RUNNING;
+                g_emu.show_menu = false;
                 break;
             case MENU_ACTION_EXIT:
                 config_save();
@@ -250,6 +275,7 @@ void ui_mainloop(void) {
 
         /* ── SETTINGS ────────────────────────────────────────────── */
         case UI_STATE_SETTINGS: {
+            s_pause_hold = 0;  /* can't pause while in settings */
             bool done = settings_update(emu_buttons);
             settings_draw();
             if (done) {

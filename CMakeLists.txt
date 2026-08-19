@@ -29,7 +29,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 # ─────────────────────────────────────────────────────────────────────────────
 set(VITA_APP_NAME  "GBAVitaEX")
 set(VITA_TITLEID   "GBAVEX001")
-set(VITA_VERSION   "01.30")
+set(VITA_VERSION   "01.40")
 set(VITA_MKSFOEX_FLAGS "-d ATTRIBUTE2=12")
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -418,7 +418,7 @@ target_link_libraries(GBAVitaEX.elf
 #  Compiler definitions per target (in addition to global ones)
 # ─────────────────────────────────────────────────────────────────────────────
 target_compile_definitions(GBAVitaEX.elf PRIVATE
-    GBAVITAEX_VERSION="1.3.0"
+    GBAVITAEX_VERSION="1.4.0"
     SAVE_PATH="ux0:data/GBAVitaEX/saves"
     STATE_PATH="ux0:data/GBAVitaEX/states"
     BIOS_PATH="ux0:data/GBAVitaEX"

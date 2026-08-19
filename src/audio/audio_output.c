@@ -116,7 +116,17 @@ void audio_output_init(int sample_rate, int samples_per_frame) {
 }
 
 void audio_output_shutdown(void) {
-    if (s_stretcher) { stretch_deinit(s_stretcher); s_stretcher = NULL; }
+    if (s_stretcher) {
+        /* Flush any pending tail samples from TDHS internal state before
+         * deiniting — prevents audio dropout at FF mode exit. The flushed
+         * output is sent to the carry buffer for final drain. */
+        if (s_out_buf_cap > 0) {
+            int tail = stretch_flush(s_stretcher, s_out_buf);
+            if (tail > 0) carry_append(s_out_buf, tail);
+        }
+        stretch_deinit(s_stretcher);
+        s_stretcher = NULL;
+    }
     free(s_out_buf); s_out_buf = NULL; s_out_buf_cap = 0;
     if (s_port >= 0) { sceAudioOutReleasePort(s_port); s_port = -1; }
 }
@@ -127,7 +137,15 @@ void audio_output_submit_ff(const int16_t *buf, int frames,
 
     if (!pitch_correct || ff_ratio <= 1.01f) {
         /* ── Normal path: direct output ── */
-        if (s_stretcher) { stretch_deinit(s_stretcher); s_stretcher = NULL; }
+        if (s_stretcher) {
+            /* Flush tail samples before tearing down the stretcher */
+            if (s_out_buf_cap > 0) {
+                int tail = stretch_flush(s_stretcher, s_out_buf);
+                if (tail > 0) carry_append(s_out_buf, tail);
+            }
+            stretch_deinit(s_stretcher);
+            s_stretcher = NULL;
+        }
         s_carry_frames = 0;
         int done = 0;
         while (done < frames) {

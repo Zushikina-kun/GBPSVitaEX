@@ -4,6 +4,53 @@ All notable changes to GBAVitaEX will be documented in this file.
 
 ---
 
+## [1.4.0] — 2026-08-19
+
+### Fixed — Critical Integration Gaps
+
+These features were built in v1.3.0 but were dead code — nothing in the application ever activated them. All are now fully wired.
+
+**GB Link Cable — P2 core never stepped (Critical)**
+- `gb_engine_run_frame()` now calls `gb_link_run_frame()` immediately after P1's `runFrame()` when `gb_link_active()` is true.
+- Both cores run on the same thread in tight lock-step per frame, which is the correct model for `GBSIOLockstep`'s synchronous signal/wait callbacks.
+- Pokémon trading, Tetris 2-player, and other link-cable games are now functional.
+
+**GBA RFU Multiplayer — never triggered (Critical)**
+- `rfu_vita_net_start()` is now callable from the in-game menu (Menu → WiFi Multiplayer: Host / Join).
+- `load_gamepak()` now uses `SERIAL_MODE_AUTO` instead of `SERIAL_MODE_DISABLED`, so `gba_over.h` flags take effect: Pokémon FR/LG/Emerald/Ruby/Sapphire, Mario Golf, Megaman BN5/6, and 20+ other RFU-capable games get `serial_mode = SERIAL_MODE_RFU` set automatically on load.
+- Menu now shows WiFi status in the title bar and RFU/stop options dynamically.
+- Menu shows Link Cable options for GB/GBC games.
+
+### Fixed — Audio
+
+**`stretch_flush()` missing before `stretch_deinit()`**
+- Added `stretch_flush()` call in `audio_output_shutdown()` and in the normal-speed path of `audio_output_submit_ff()`.
+- Eliminates the audible dropout when releasing fast-forward or on app exit.
+
+### Fixed — Input
+
+**Pause hotkey conflict with L1 as FF button**
+- The L+R pause hotkey guard now excludes both `VBTN_L1` and `VBTN_R1`, not just R1.
+- If either trigger is configured as the fast-forward button, the L+R pause combo is disabled for that session.
+
+**`s_pause_hold` not reset on state transitions**
+- `s_pause_hold` is now explicitly reset to 0 when entering `UI_STATE_MENU`, `UI_STATE_SETTINGS`, and `UI_STATE_KEYMAPPER`, preventing phantom pause triggers on return to `UI_STATE_RUNNING`.
+
+### Fixed — RFU Protocol
+
+**`netplay_num_clients` set incorrectly on non-sequential join**
+- Changed from `netplay_num_clients = slot` to `netplay_num_clients = max(netplay_num_clients, slot)`.
+- Prevents the client count from being wrong when clients join out of order or rejoin after a disconnect.
+
+### Changed
+
+- In-game menu is now **dynamic**: items shown depend on the active core (GBA → WiFi options; GB/GBC → Link Cable options) and current multiplayer state (connected → Stop options shown instead of Start options).
+- Menu shows WiFi status string from `rfu_vita_net_status()` next to the FPS counter when RFU is active.
+- Menu shows "Link Cable active" indicator when GB link is running.
+- Link Cable (single-device) activated via **Menu → Link Cable (2P)** — both players load the same ROM. P2 save is stored as `<romname>.p2.sav`.
+
+---
+
 ## [1.3.0] — 2026-08-19
 
 ### Added

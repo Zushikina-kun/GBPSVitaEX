@@ -172,7 +172,7 @@ bool gba_engine_load(const char *rom_path, const char *save_path) {
     if (load_gamepak(&info, rom_path,
                      /* force_rtc    */ -1,   /* auto-detect */
                      /* force_rumble */ -1,
-                     /* force_serial */ 0) != 0) {
+                     /* force_serial */ SERIAL_MODE_AUTO) != 0) {
         fprintf(stderr, "[gba_engine] Failed to load ROM: %s\n", rom_path);
         return false;
     }

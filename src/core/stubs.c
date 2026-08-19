@@ -47,4 +47,4 @@ void set_fastforward_override(bool fastforward) {
    mGBA version strings (from CMake-generated version.c.in)
    ────────────────────────────────────────────────────────────────────────── */
 const char* const projectName    = "GBAVitaEX";
-const char* const projectVersion = "1.3.0";
+const char* const projectVersion = "1.4.0";

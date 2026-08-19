@@ -11,6 +11,7 @@
  */
 
 #include "gb_engine.h"
+#include "gb_link.h"    /* gb_link_active(), gb_link_run_frame() */
 #include "gbavitaex.h"
 
 /* mGBA core interface */
@@ -297,6 +298,10 @@ void gb_engine_run_frame(void) {
     struct GB *gb = s_core->board;
     gb->video.frameskip = g_emu.frameskip;
     s_core->runFrame(s_core);
+    /* If GB link-cable is active, step P2 immediately after P1 in lock-step.
+     * The GBSIOLockstep driver synchronises SIO byte transfers during runFrame
+     * via timing events — both cores must execute the same frame together. */
+    if (gb_link_active()) gb_link_run_frame();
 }
 
 /* Map unified EMU_KEY_* → mGBA GBA_KEY_* (same bit layout for GB) */

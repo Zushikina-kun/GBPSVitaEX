@@ -239,7 +239,9 @@ void netpacket_poll_receive(void) {
                 if (slot > 0) {
                     s_peers[slot].addr  = from;
                     s_peers[slot].valid = true;
-                    netplay_num_clients = slot;
+                    /* Track the highest assigned client id as the count */
+                    if ((u32)slot > netplay_num_clients)
+                        netplay_num_clients = (u32)slot;
 
                     /* Reply ASSIGN with their new client_id */
                     uint8_t assign[8];
