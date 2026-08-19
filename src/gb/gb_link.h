@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/gb/gb_link.h
+/* GBVitaEX — src/gb/gb_link.h
  * Single-device GB/GBC link cable emulation via mGBA's GBSIOLockstep.
  *
  * Connects two mGBA GB cores running in the same process.

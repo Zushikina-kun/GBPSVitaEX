@@ -1,9 +1,9 @@
-/* GBAVitaEX — src/ui/settings.c
+/* GBVitaEX — src/ui/settings.c
  * Settings and key-remapper screens.
  */
 
 #include "settings.h"
-#include "gbavitaex.h"
+#include "gbvitaex.h"
 #include "../platform/psp2/psp2_ctx.h"
 #include <psp2/ctrl.h>
 #include <vita2d.h>
@@ -186,7 +186,7 @@ void settings_draw(void) {
     if (!font) return;
 
     vita2d_pgf_draw_text(font, 20, 30, RGBA8(255,215,0,255), 1.2f,
-                         "Settings  — GBAVitaEX " GBAVITAEX_VERSION_STR);
+                         "Settings  — GBVitaEX " GBVITAEX_VERSION_STR);
     vita2d_draw_line(20, 46, VITA_SCREEN_W-20, 46, RGBA8(80,80,80,255));
 
     const int ROW = 37;
@@ -284,7 +284,7 @@ bool keymapper_update(uint32_t raw_sce) {
     }
     if (KM_PRESSED(SCE_CTRL_TRIANGLE)) {
         /* Reset current EMU_KEY to default by restoring from a scratch */
-        GBAVitaEXState tmp; memset(&tmp, 0, sizeof(tmp));
+        GBVitaEXState tmp; memset(&tmp, 0, sizeof(tmp));
         /* We can't call emu_reset_key_map() without clobbering everything.
          * Just clear all bindings for this key and let the user re-bind. */
         uint32_t bit = (uint32_t)(1u << km_cursor);

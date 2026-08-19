@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/main.c
+/* GBVitaEX — src/main.c
  * PSVita application entry point.
  */
 
@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "gbavitaex.h"
+#include "gbvitaex.h"
 #include "platform/psp2/psp2_ctx.h"
 #include "ui/ui.h"
 #include "core/emu_core.h"
@@ -45,7 +45,7 @@ const char * const g_vbtn_names[VBTN_COUNT] = {
 };
 
 /* ── Global emulator state ── */
-GBAVitaEXState g_emu;
+GBVitaEXState g_emu;
 
 /* Apply the default button mapping (GBA layout on Vita) */
 void emu_reset_key_map(void) {
@@ -84,12 +84,12 @@ static void init_global_state(void) {
 }
 
 static void create_data_dirs(void) {
-    sceIoMkdir("ux0:data/GBAVitaEX",             0777);
-    sceIoMkdir("ux0:data/GBAVitaEX/roms",         0777);
-    sceIoMkdir("ux0:data/GBAVitaEX/saves",        0777);
-    sceIoMkdir("ux0:data/GBAVitaEX/states",       0777);
-    sceIoMkdir("ux0:data/GBAVitaEX/screenshots",  0777);
-    sceIoMkdir("ux0:data/GBAVitaEX/cheats",       0777);
+    sceIoMkdir("ux0:data/GBVitaEX",             0777);
+    sceIoMkdir("ux0:data/GBVitaEX/roms",         0777);
+    sceIoMkdir("ux0:data/GBVitaEX/saves",        0777);
+    sceIoMkdir("ux0:data/GBVitaEX/states",       0777);
+    sceIoMkdir("ux0:data/GBVitaEX/screenshots",  0777);
+    sceIoMkdir("ux0:data/GBVitaEX/cheats",       0777);
 }
 
 static void load_modules(void) {

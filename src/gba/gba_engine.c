@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/gba/gba_engine.c
+/* GBVitaEX — src/gba/gba_engine.c
  * Drives gpSP's GBA engine directly, without going through libretro.
  *
  * Design:
@@ -19,7 +19,7 @@
 #include "common.h"
 #include "gpsp_config.h"  /* ROM/RAM translation cache size constants */
 
-#include "gbavitaex.h"
+#include "gbvitaex.h"
 
 #ifdef HAVE_DYNAREC
 #  include <psp2/kernel/sysmem.h>

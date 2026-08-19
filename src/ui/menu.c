@@ -1,10 +1,10 @@
-/* GBAVitaEX — src/ui/menu.c
+/* GBVitaEX — src/ui/menu.c
  * In-game pause menu with save states, multiplayer, and link cable options.
  * Menu items are shown/hidden based on the active core and current state.
  */
 
 #include "menu.h"
-#include "gbavitaex.h"
+#include "gbvitaex.h"
 #include "../core/emu_core.h"
 #include "../core/savestate_mgr.h"
 #include "../core/rfu_vita_net.h"
@@ -137,7 +137,7 @@ void menu_draw(void) {
     if (!font) return;
 
     /* Title */
-    vita2d_pgf_draw_text(font, 20, 30, RGBA8(255,215,0,255), 1.2f, "GBAVitaEX");
+    vita2d_pgf_draw_text(font, 20, 30, RGBA8(255,215,0,255), 1.2f, "GBVitaEX");
 
     /* ROM name */
     const char *base = strrchr(g_emu.rom_path, '/');

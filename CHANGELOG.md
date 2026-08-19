@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to GBAVitaEX will be documented in this file.
+All notable changes to GBVitaEX will be documented in this file.
 
 ---
 
@@ -156,7 +156,7 @@ These features were built in v1.3.0 but were dead code — nothing in the applic
 - Default mapping: Cross=A, Circle=B, Square=B, L=L, R=R, Start=Start, Select=Select, D-Pad=D-Pad
 
 #### Persistent Settings
-- All settings (clock, screen mode, volume, frameskip, FF speed, FF button, colour correction, interframe blend, audio, dynarec, button map) are saved to `ux0:data/GBAVitaEX/config.ini` on exit or when leaving the settings screen
+- All settings (clock, screen mode, volume, frameskip, FF speed, FF button, colour correction, interframe blend, audio, dynarec, button map) are saved to `ux0:data/GBVitaEX/config.ini` on exit or when leaving the settings screen
 - Automatically loaded on next launch
 - Plain INI format — can be edited manually with a text editor
 

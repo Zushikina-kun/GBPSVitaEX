@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/core/savestate_mgr.c
+/* GBVitaEX — src/core/savestate_mgr.c
  * Thin wrapper: slot-based save/load states through emu_core.
  */
 #include "savestate_mgr.h"
@@ -15,7 +15,7 @@ bool savestate_mgr_load(int slot) {
 }
 
 bool savestate_mgr_has_slot(int slot) {
-    extern GBAVitaEXState g_emu;
+    extern GBVitaEXState g_emu;
     char path[600];
     snprintf(path, sizeof(path), "%s.st%d", g_emu.state_path, slot);
     SceIoStat st;

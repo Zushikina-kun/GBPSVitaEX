@@ -1,8 +1,8 @@
-/* GBAVitaEX — src/core/emu_core.h
+/* GBVitaEX — src/core/emu_core.h
  * Central dispatch: ROM detection, core selection, per-frame loop.
  */
 #pragma once
-#include "gbavitaex.h"
+#include "gbvitaex.h"
 
 /* Detect ROM type from file magic and header; returns CORE_NONE on failure. */
 EmuCore emu_detect_rom(const char *path);

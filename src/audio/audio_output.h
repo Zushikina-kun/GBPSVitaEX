@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/audio/audio_output.h
+/* GBVitaEX — src/audio/audio_output.h
  * GBA audio output: thin sceAudioOut wrapper with optional TDHS pitch
  * correction for fast-forward mode.
  */

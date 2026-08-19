@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/cheats/cheat_gb.c
+/* GBVitaEX — src/cheats/cheat_gb.c
  * GB/GBC cheat loader — mGBA engine only.
  * Uses mGBA's mCheatAddLine API.
  * Kept in a separate TU from cheat_gba.c to avoid header conflicts.

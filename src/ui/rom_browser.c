@@ -1,10 +1,10 @@
-/* GBAVitaEX — src/ui/rom_browser.c
+/* GBVitaEX — src/ui/rom_browser.c
  * Simple paginated file browser for ROM selection.
  * Supported extensions: .gba .agb .bin .gbz .gbc .gb
  */
 
 #include "rom_browser.h"
-#include "gbavitaex.h"
+#include "gbvitaex.h"
 #include "../platform/psp2/psp2_ctx.h"   /* g_pgf_font */
 
 #include <psp2/io/dirent.h>
@@ -134,7 +134,7 @@ void rom_browser_draw(void) {
 
     /* Header */
     vita2d_pgf_draw_text(font, 20, 30, RGBA8(255, 215, 0, 255), 1.0f,
-                         "GBAVitaEX — Select ROM");
+                         "GBVitaEX — Select ROM");
     vita2d_pgf_draw_text(font, 20, 55, RGBA8(180, 180, 180, 255), 0.8f,
                          s_cur_dir);
 

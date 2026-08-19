@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/audio/audio_output.c
+/* GBVitaEX — src/audio/audio_output.c
  * GBA audio output with TDHS pitch correction for fast-forward.
  *
  * Normal path: gpSP ring buffer → sceAudioOutOutput (direct, zero overhead)

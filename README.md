@@ -1,4 +1,4 @@
-# GBAVitaEX v1.4.0
+# GBVitaEX v1.4.0
 
 **The best GBA / GBC / GB emulator for PlayStation Vita.**
 
@@ -42,7 +42,7 @@ Combines the fastest GBA emulator (gpSP ARMv7 JIT dynarec) with the most accurat
 ### Cheats
 - GBA: GameShark / Action Replay v1–v3 / CodeBreaker via gpSP's `cheat_parse()`
 - GB/GBC: GameShark / Game Genie via mGBA's cheat device
-- Auto-loaded from `ux0:data/GBAVitaEX/cheats/<romname>.cht`
+- Auto-loaded from `ux0:data/GBVitaEX/cheats/<romname>.cht`
 
 ### GBA Hardware Features (auto-detected from gba_over.h)
 - **RTC**: Pokémon Ruby/Sapphire/Emerald, berry growth, time events
@@ -73,7 +73,7 @@ Combines the fastest GBA emulator (gpSP ARMv7 JIT dynarec) with the most accurat
 - **Pause hotkey**: hold L + R triggers for 1 second (disabled if either trigger is the FF button)
 
 ### Settings
-All settings saved to `ux0:data/GBAVitaEX/config.ini` on exit, auto-loaded on launch.
+All settings saved to `ux0:data/GBVitaEX/config.ini` on exit, auto-loaded on launch.
 
 | Setting | Options |
 |---|---|
@@ -92,18 +92,18 @@ All settings saved to `ux0:data/GBAVitaEX/config.ini` on exit, auto-loaded on la
 
 ### Screenshot
 - Captured from `sceDisplayGetFrameBuf()` → PNG via libpng
-- Saved to `ux0:data/GBAVitaEX/screenshots/shot####.png`
+- Saved to `ux0:data/GBVitaEX/screenshots/shot####.png`
 - Saved asynchronously on a background thread — no frame stutter
 
 ---
 
 ## Installation
 
-1. Install `GBAVitaEX-v1.4.0.vpk` via VitaShell
-2. Place your **GBA BIOS** at `ux0:data/GBAVitaEX/gba_bios.bin` *(optional — built-in open-source BIOS used if absent)*
-3. Place your **GB/GBC BIOS** at `ux0:data/GBAVitaEX/gb_bios.bin` *(optional)*
-4. Place ROMs in `ux0:data/GBAVitaEX/roms/` (subdirectories supported)
-5. Launch **GBAVitaEX** from the LiveArea
+1. Install `GBVitaEX-v1.4.0.vpk` via VitaShell
+2. Place your **GBA BIOS** at `ux0:data/GBVitaEX/gba_bios.bin` *(optional — built-in open-source BIOS used if absent)*
+3. Place your **GB/GBC BIOS** at `ux0:data/GBVitaEX/gb_bios.bin` *(optional)*
+4. Place ROMs in `ux0:data/GBVitaEX/roms/` (subdirectories supported)
+5. Launch **GBVitaEX** from the LiveArea
 
 > **Requires:** HENkaku / Ensō custom firmware
 
@@ -150,7 +150,7 @@ Open with **SELECT + START held for 0.5 seconds**.
 
 ## Cheat File Format
 
-`ux0:data/GBAVitaEX/cheats/<romname>.cht`
+`ux0:data/GBVitaEX/cheats/<romname>.cht`
 
 ```
 # GBA cheats
@@ -168,7 +168,7 @@ GG XXXX-XXXX-XXX       Game Genie
 ## Directory Layout
 
 ```
-ux0:data/GBAVitaEX/
+ux0:data/GBVitaEX/
 ├── gba_bios.bin        (optional)
 ├── gb_bios.bin         (optional)
 ├── config.ini          (auto-saved settings)

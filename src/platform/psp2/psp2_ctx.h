@@ -1,11 +1,11 @@
-/* GBAVitaEX — src/platform/psp2/psp2_ctx.h
+/* GBVitaEX — src/platform/psp2/psp2_ctx.h
  * vita2d rendering context, input polling, clock control.
  */
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>
 #include <vita2d.h>
-#include "gbavitaex.h"   /* VitaButton, EMU_KEY_*, g_emu */
+#include "gbvitaex.h"   /* VitaButton, EMU_KEY_*, g_emu */
 
 /* Screen scaling modes */
 typedef enum {

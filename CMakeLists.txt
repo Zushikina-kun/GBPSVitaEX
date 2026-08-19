@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.12)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  GBAVitaEX — Best GBA / GBC / GB emulator for PlayStation Vita
+#  GBVitaEX — Best GBA / GBC / GB emulator for PlayStation Vita
 #  Engine: gpSP ARMv7 dynarec (GBA) + mGBA GB/GBC core (GB/GBC)
 #  Frontend: standalone vita2d VPK, no RetroArch required
 # ─────────────────────────────────────────────────────────────────────────────
@@ -20,14 +20,14 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     endif()
 endif()
 
-project(GBAVitaEX C CXX ASM)
+project(GBVitaEX C CXX ASM)
 
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  App metadata
 # ─────────────────────────────────────────────────────────────────────────────
-set(VITA_APP_NAME  "GBAVitaEX")
+set(VITA_APP_NAME  "GBVitaEX")
 set(VITA_TITLEID   "GBAVEX001")
 set(VITA_VERSION   "01.40")
 set(VITA_MKSFOEX_FLAGS "-d ATTRIBUTE2=12")
@@ -299,7 +299,7 @@ set(MGBA_UTIL_SOURCES
 set(MGBA_GUI_SOURCES)
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  GBAVitaEX application sources
+#  GBVitaEX application sources
 # ─────────────────────────────────────────────────────────────────────────────
 set(APP_SOURCES
     # Entry point + platform bootstrap
@@ -366,7 +366,7 @@ set_source_files_properties(
 # ─────────────────────────────────────────────────────────────────────────────
 #  Build the executable
 # ─────────────────────────────────────────────────────────────────────────────
-add_executable(GBAVitaEX.elf
+add_executable(GBVitaEX.elf
     ${APP_SOURCES}
     ${GPSP_CORE_SOURCES}
     ${MGBA_GB_SOURCES}
@@ -378,7 +378,7 @@ add_executable(GBAVitaEX.elf
 # ─────────────────────────────────────────────────────────────────────────────
 #  Link libraries
 # ─────────────────────────────────────────────────────────────────────────────
-target_link_libraries(GBAVitaEX.elf
+target_link_libraries(GBVitaEX.elf
     # Vita display + rendering
     vita2d
     SceGxm_stub
@@ -417,21 +417,21 @@ target_link_libraries(GBAVitaEX.elf
 # ─────────────────────────────────────────────────────────────────────────────
 #  Compiler definitions per target (in addition to global ones)
 # ─────────────────────────────────────────────────────────────────────────────
-target_compile_definitions(GBAVitaEX.elf PRIVATE
-    GBAVITAEX_VERSION="1.4.0"
-    SAVE_PATH="ux0:data/GBAVitaEX/saves"
-    STATE_PATH="ux0:data/GBAVitaEX/states"
-    BIOS_PATH="ux0:data/GBAVitaEX"
-    ROM_PATH="ux0:data/GBAVitaEX/roms"
-    SCREENSHOT_PATH="ux0:data/GBAVitaEX/screenshots"
+target_compile_definitions(GBVitaEX.elf PRIVATE
+    GBVITAEX_VERSION="1.4.0"
+    SAVE_PATH="ux0:data/GBVitaEX/saves"
+    STATE_PATH="ux0:data/GBVitaEX/states"
+    BIOS_PATH="ux0:data/GBVitaEX"
+    ROM_PATH="ux0:data/GBVitaEX/roms"
+    SCREENSHOT_PATH="ux0:data/GBVitaEX/screenshots"
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  VPK packaging
 # ─────────────────────────────────────────────────────────────────────────────
-vita_create_self(GBAVitaEX.self GBAVitaEX.elf UNSAFE)
+vita_create_self(GBVitaEX.self GBVitaEX.elf UNSAFE)
 
-vita_create_vpk(GBAVitaEX.vpk ${VITA_TITLEID} GBAVitaEX.self
+vita_create_vpk(GBVitaEX.vpk ${VITA_TITLEID} GBVitaEX.self
     VERSION ${VITA_VERSION}
     NAME    ${VITA_APP_NAME}
     # App icons and livearea
@@ -450,8 +450,8 @@ if(NOT DEFINED PSVITAIP)
 endif()
 
 add_custom_target(send
-    COMMAND curl --ftp-method nocwd -T GBAVitaEX.vpk
-            ftp://${PSVITAIP}:1337/ux0:/data/GBAVitaEX.vpk
-    DEPENDS GBAVitaEX.vpk
-    COMMENT "Uploading GBAVitaEX.vpk to Vita at ${PSVITAIP}"
+    COMMAND curl --ftp-method nocwd -T GBVitaEX.vpk
+            ftp://${PSVITAIP}:1337/ux0:/data/GBVitaEX.vpk
+    DEPENDS GBVitaEX.vpk
+    COMMENT "Uploading GBVitaEX.vpk to Vita at ${PSVITAIP}"
 )

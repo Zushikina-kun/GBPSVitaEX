@@ -1,11 +1,11 @@
-/* GBAVitaEX — src/gb/gb_link.c
+/* GBVitaEX — src/gb/gb_link.c
  * Single-device GB/GBC link cable via mGBA GBSIOLockstep.
  * Two mGBA cores run in the same process, sharing the lockstep controller.
  */
 
 #include "gb_link.h"
 #include "gb_engine.h"
-#include "gbavitaex.h"
+#include "gbvitaex.h"
 
 /* mGBA headers */
 #include <mgba-util/common.h>

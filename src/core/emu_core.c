@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/core/emu_core.c
+/* GBVitaEX — src/core/emu_core.c
  * Central dispatch layer.
  * Detects ROM type and routes everything to either the gpSP GBA engine
  * or the mGBA GB/GBC engine.
@@ -8,7 +8,7 @@
 #include "../gba/gba_engine.h"
 #include "../gb/gb_engine.h"
 #include "../cheats/cheat_mgr.h"
-#include "gbavitaex.h"
+#include "gbvitaex.h"
 
 #include <stdio.h>
 #include <stdlib.h>

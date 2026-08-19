@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/gb/gb_engine.h
+/* GBVitaEX — src/gb/gb_engine.h
  * mGBA GB/GBC engine wrapper.
  */
 #pragma once

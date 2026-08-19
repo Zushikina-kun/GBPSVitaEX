@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/gba/gba_engine.h
+/* GBVitaEX — src/gba/gba_engine.h
  * gpSP GBA engine wrapper (standalone — no libretro).
  */
 #pragma once

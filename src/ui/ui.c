@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/ui/ui.c
+/* GBVitaEX — src/ui/ui.c
  * Top-level application loop.
  *
  * States:
@@ -13,7 +13,7 @@
 #include "rom_browser.h"
 #include "menu.h"
 #include "settings.h"
-#include "gbavitaex.h"
+#include "gbvitaex.h"
 #include "../core/emu_core.h"
 #include "../gb/gb_link.h"
 #include "../platform/psp2/psp2_ctx.h"
@@ -21,7 +21,7 @@
 
 #include <psp2/ctrl.h>
 #include <psp2/rtc.h>
-/* sceKernelPowerTick defined in processmgr.h, included via gbavitaex.h chain */
+/* sceKernelPowerTick defined in processmgr.h, included via gbvitaex.h chain */
 #include <psp2/kernel/processmgr.h>
 #include <vita2d.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* GBAVitaEX — unified GBA/GBC/GB emulator for PlayStation Vita
+/* GBVitaEX — unified GBA/GBC/GB emulator for PlayStation Vita
  * Master header: shared types, constants, and forward declarations.
  */
 #pragma once
@@ -10,30 +10,30 @@
 /* ──────────────────────────────────────────────
    Versioning
    ────────────────────────────────────────────── */
-#define GBAVITAEX_VER_MAJOR  1
-#define GBAVITAEX_VER_MINOR  4
-#define GBAVITAEX_VER_PATCH  0
-#define GBAVITAEX_VERSION_STR "1.4.0"
+#define GBVITAEX_VER_MAJOR  1
+#define GBVITAEX_VER_MINOR  4
+#define GBVITAEX_VER_PATCH  0
+#define GBVITAEX_VERSION_STR "1.4.0"
 
 /* ──────────────────────────────────────────────
    Path constants  (overridable at cmake time)
    ────────────────────────────────────────────── */
 #ifndef SAVE_PATH
-#define SAVE_PATH        "ux0:data/GBAVitaEX/saves"
+#define SAVE_PATH        "ux0:data/GBVitaEX/saves"
 #endif
 #ifndef STATE_PATH
-#define STATE_PATH       "ux0:data/GBAVitaEX/states"
+#define STATE_PATH       "ux0:data/GBVitaEX/states"
 #endif
 #ifndef BIOS_PATH
-#define BIOS_PATH        "ux0:data/GBAVitaEX"
+#define BIOS_PATH        "ux0:data/GBVitaEX"
 #endif
 #ifndef ROM_PATH
-#define ROM_PATH         "ux0:data/GBAVitaEX/roms"
+#define ROM_PATH         "ux0:data/GBVitaEX/roms"
 #endif
 #ifndef SCREENSHOT_PATH
-#define SCREENSHOT_PATH  "ux0:data/GBAVitaEX/screenshots"
+#define SCREENSHOT_PATH  "ux0:data/GBVitaEX/screenshots"
 #endif
-#define CONFIG_PATH      "ux0:data/GBAVitaEX/config.ini"
+#define CONFIG_PATH      "ux0:data/GBVitaEX/config.ini"
 
 /* ──────────────────────────────────────────────
    Screen geometry
@@ -108,7 +108,7 @@ extern const char * const g_vbtn_names[VBTN_COUNT];
 /* ──────────────────────────────────────────────
    Emulator state (shared between modules)
    ────────────────────────────────────────────── */
-typedef struct GBAVitaEXState {
+typedef struct GBVitaEXState {
     EmuCore   active_core;
     char      rom_path[512];
     char      save_path[512];
@@ -147,9 +147,9 @@ typedef struct GBAVitaEXState {
      * Multiple Vita buttons can map to the same EMU_KEY, and a single
      * Vita button can map to multiple EMU_KEY bits (OR'd together). */
     uint32_t  key_map[VBTN_COUNT];
-} GBAVitaEXState;
+} GBVitaEXState;
 
-extern GBAVitaEXState g_emu;
+extern GBVitaEXState g_emu;
 
 /* Default key map — applied when no config file exists */
 void emu_reset_key_map(void);

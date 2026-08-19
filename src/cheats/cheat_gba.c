@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/cheats/cheat_gba.c
+/* GBVitaEX — src/cheats/cheat_gba.c
  * GBA cheat loader — gpSP engine only.
  * Uses gpSP's cheat_parse(index, code_string) API.
  * Kept in a separate TU from cheat_gb.c to avoid header conflicts.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# GBAVitaEX build script
+# GBVitaEX build script
 # Run from the project root inside the devkitPro msys2 shell:
 #   bash scripts/build.sh [clean|rebuild] [PSVITAIP=x.x.x.x]
 #
@@ -46,11 +46,11 @@ make -j$(nproc)
 
 echo ""
 echo ">>> Build complete!"
-if [ -f GBAVitaEX.vpk ]; then
-    echo "    Output: $BUILD_DIR/GBAVitaEX.vpk"
-    ls -lh GBAVitaEX.vpk
+if [ -f GBVitaEX.vpk ]; then
+    echo "    Output: $BUILD_DIR/GBVitaEX.vpk"
+    ls -lh GBVitaEX.vpk
 else
-    echo "    WARNING: GBAVitaEX.vpk not found — check build output above."
+    echo "    WARNING: GBVitaEX.vpk not found — check build output above."
 fi
 
 # Optional deploy via FTP
@@ -58,5 +58,5 @@ if echo "$EXTRA_CMAKE" | grep -q PSVITAIP; then
     IP=$(echo "$EXTRA_CMAKE" | grep -oP '(?<=PSVITAIP=)[^ ]+')
     echo ""
     echo ">>> Uploading to Vita at $IP..."
-    curl --ftp-method nocwd -T GBAVitaEX.vpk "ftp://$IP:1337/ux0:/data/GBAVitaEX.vpk"
+    curl --ftp-method nocwd -T GBVitaEX.vpk "ftp://$IP:1337/ux0:/data/GBVitaEX.vpk"
 fi

@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/core/rfu_vita_net.c
+/* GBVitaEX — src/core/rfu_vita_net.c
  * PSVita UDP transport for gpSP RFU wireless-adapter multiplayer.
  *
  * Architecture

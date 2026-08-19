@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/gb/gb_engine.c
+/* GBVitaEX — src/gb/gb_engine.c
  * Drives mGBA's GB/GBC emulation core as a standalone engine.
  *
  * mGBA uses a vtable-based struct mCore for all operations.
@@ -12,7 +12,7 @@
 
 #include "gb_engine.h"
 #include "gb_link.h"    /* gb_link_active(), gb_link_run_frame() */
-#include "gbavitaex.h"
+#include "gbvitaex.h"
 
 /* mGBA core interface */
 #include <mgba/core/core.h>

@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/core/stubs.c
+/* GBVitaEX — src/core/stubs.c
  * Definitions for symbols normally provided by gpSP's libretro.c and
  * mGBA's CMake-generated version.c — both of which we exclude from the build.
  *
@@ -46,5 +46,5 @@ void set_fastforward_override(bool fastforward) {
 /* ──────────────────────────────────────────────────────────────────────────
    mGBA version strings (from CMake-generated version.c.in)
    ────────────────────────────────────────────────────────────────────────── */
-const char* const projectName    = "GBAVitaEX";
+const char* const projectName    = "GBVitaEX";
 const char* const projectVersion = "1.4.0";

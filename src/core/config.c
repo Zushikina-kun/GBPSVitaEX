@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/core/config.c
+/* GBVitaEX — src/core/config.c
  * Persistent settings saved as a simple INI file.
  * Format:
  *   [settings]
@@ -11,7 +11,7 @@
  *   ...  (value = EMU_KEY_* bitmask)
  */
 
-#include "gbavitaex.h"
+#include "gbvitaex.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

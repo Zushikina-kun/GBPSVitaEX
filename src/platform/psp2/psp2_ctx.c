@@ -1,4 +1,4 @@
-/* GBAVitaEX — src/platform/psp2/psp2_ctx.c
+/* GBVitaEX — src/platform/psp2/psp2_ctx.c
  * PSVita platform context: vita2d rendering, input, clock control.
  *
  * Rendering approach
@@ -18,7 +18,7 @@
  */
 
 #include "psp2_ctx.h"
-#include "gbavitaex.h"
+#include "gbvitaex.h"
 
 #include <psp2/ctrl.h>
 #include <psp2/touch.h>
@@ -393,7 +393,7 @@ bool psp2_ctx_screenshot(const char *path) {
     job->path[sizeof(job->path) - 1] = '\0';
 
     /* Spawn background thread — SCE priority 0x10000100, stack 64 KB */
-    SceUID tid = sceKernelCreateThread("gbavitaex_screenshot",
+    SceUID tid = sceKernelCreateThread("gbvitaex_screenshot",
                                        screenshot_thread_fn,
                                        0x10000100, 64 * 1024, 0, 0, NULL);
     if (tid < 0) {
