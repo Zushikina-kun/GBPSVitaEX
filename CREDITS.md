@@ -1,6 +1,6 @@
 # Credits & Attributions
 
-GBVitaEX is built entirely on the work of the open-source emulation and homebrew communities.
+MGBAVitaEX is built on mGBA's PSVita port with targeted improvements.
 Every engine, library, and platform layer listed here was essential to this project.
 
 ---
@@ -123,21 +123,19 @@ The RFU (Radio Frequency Unit) wireless adapter emulation in GBVitaEX is entirel
 
 ---
 
-## GBVitaEX Authors
+## MGBAVitaEX Authors
 
 | Person | Contribution |
 |---|---|
-| **Zushikina-kun** | Project concept, Vita platform integration, emulation dispatch layer, native UI (vita2d), build system, audio pipeline, multiplayer transport, configuration system |
+| **Zushikina-kun** | Project concept, PSVita platform patches, build system, documentation |
 
 ---
 
 ## Licence Notice
 
-GBVitaEX is licensed under the **GNU General Public License v2.0**, inheriting the licence of its primary dependency (gpSP). mGBA components are MPL-2.0 (compatible with GPL-2.0 in this combination). audio-stretch is BSD-3-Clause (compatible with GPL-2.0).
-
-See [LICENSE](LICENSE) for the full GPL-2.0 text.
+MGBAVitaEX patches are MPL-2.0, inheriting the licence of mGBA. See [LICENSE](LICENSE).
 
 ---
 
 *If your work has been omitted or incorrectly attributed, please open an issue at  
-https://github.com/Zushikina-kun/GBPSVitaEX/issues*
+https://github.com/Zushikina-kun/GBVitaEX/issues*

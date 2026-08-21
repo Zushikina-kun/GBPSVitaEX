@@ -1,182 +1,120 @@
-# GBVitaEX v1.4.0
+# MGBAVitaEX
 
 **The best GBA / GBC / GB emulator for PlayStation Vita.**
 
-Combines the fastest GBA emulator (gpSP ARMv7 JIT dynarec) with the most accurate GB/GBC emulator (mGBA), in a single standalone native VPK — no RetroArch required.
+A surgical improvement of mGBA's official PSVita port — same battle-tested engine, with all the known bugs fixed and the most-requested features added. No RetroArch required.
+
+Based on [mGBA](https://mgba.io/) by endrift (MPL-2.0).
 
 ---
 
-## Features
+## What's different from stock mGBA PSVita
 
-### Engines
-
-| System | Engine | Method |
-|---|---|---|
-| GBA | gpSP (libretro/davidgfnet fork) | ARMv7 JIT dynarec — GBA ARM7TDMI → native Cortex-A9 at runtime |
-| GB / GBC | mGBA 0.10.x (endrift) | SM83 interpreter — most accurate GB/GBC emulator available |
-
-### Performance
-- **CPU clock**: 333 / 444 / 500 MHz (user-configurable)
-- **Fast-forward**: 1.25× – 8× (step 0.25×), hold configurable button (default: R Trigger)
-  - Vsync disabled during FF via `vita2d_set_vblank_wait(0)` — no display cap
-  - **Pitch correction** (TDHS): music stays at normal pitch even at 8× speed — toggle in Settings
-- **Frameskip**: 0–5 per-frame skip for both GBA and GB/GBC
-- **JIT dynarec**: `sceKernelOpenVMDomain()` checked; graceful fallback to interpreter if unavailable
-- **Watchdog**: `sceKernelPowerTick()` called every frame — Vita never sleeps during play
-
-### Display
-- **3 screen modes**: Aspect-correct (default), Fullscreen stretch, Integer scale
-- **GBA LCD colour correction**: 32 768-entry hardware-accurate gamma LUT
-- **Interframe blending**: auto-disabled during fast-forward
-
-### Audio
-- GBA: gpSP 65 536 Hz ring buffer → `sceAudioOut`, with TDHS pitch correction during FF
-- GB/GBC: mGBA 131 072 Hz → cosine-resampled to 48 000 Hz in a dedicated kernel thread
-- Volume 0–100% applied live; mute flag respected by both engines
-
-### Saves
-- **SRAM auto-save** on ROM unload / app exit
-- **10 save state slots** (0–9) per ROM
-- **IPS/UPS/BPS patch loading** for GB/GBC ROMs (via mGBA)
-
-### Cheats
-- GBA: GameShark / Action Replay v1–v3 / CodeBreaker via gpSP's `cheat_parse()`
-- GB/GBC: GameShark / Game Genie via mGBA's cheat device
-- Auto-loaded from `ux0:data/GBVitaEX/cheats/<romname>.cht`
-
-### GBA Hardware Features (auto-detected from gba_over.h)
-- **RTC**: Pokémon Ruby/Sapphire/Emerald, berry growth, time events
-- **Solar sensor**: Boktai series
-- **Tilt/gyro**: Yoshi Topsy-Turvy, Kirby Tilt 'n' Tumble (via `sceMotionGetSensorState`)
-- **Rumble**: Drill Dozer, WarioWare: Twisted (via `sceCtrlSetActuator`)
-- **150+ per-game overrides** (idle loops, save type, serial mode) from `gba_over.h`
-
-### Multiplayer
-
-#### GBA — RFU Wireless Adapter (WiFi LAN)
-- Access via **Menu → WiFi Multiplayer: Host** or **Join**
-- Uses SceNet UDP broadcast on port 7354 for peer discovery; unicast for game data
-- Working games: Pokémon FireRed/LeafGreen/Emerald, Mario Golf: Advance Tour, Megaman BN5/6, Mario Tennis Power Tour, and others flagged in `gba_over.h`
-- Maximum 5 players (1 host + 4 clients)
-- Same LAN subnet required; internet play needs a relay server
-
-#### GB/GBC — Single-Device Link Cable
-- Access via **Menu → Link Cable (2P)**
-- Runs two mGBA GB cores in lock-step on the same Vita via `GBSIOLockstepInit`
-- Enables Pokémon trading, Tetris 2-player, etc.
-- Both players use the same ROM; P2 save stored as `<romname>.p2.sav`
-
-### Input
-- **Full button remapping**: every GBA/GB input bindable to any Vita button
-- **Fast-forward button**: configurable (Off / R Trigger / Back-L / Back-R / Triangle)
-- Analog left stick as D-Pad fallback
-- **Pause hotkey**: hold L + R triggers for 1 second (disabled if either trigger is the FF button)
-
-### Settings
-All settings saved to `ux0:data/GBVitaEX/config.ini` on exit, auto-loaded on launch.
-
-| Setting | Options |
+| Fix / Feature | Details |
 |---|---|
-| CPU Clock | 333 / 444 / 500 MHz |
-| Screen Mode | Aspect / Fullscreen / Integer |
-| Volume | 0–100% |
-| Frameskip | Off / 1–5 frames |
-| Fast-Forward Speed | 1.25× – 8× |
-| Fast-Forward Button | Off / R Trigger / Back-L / Back-R / Triangle |
-| FF Pitch Correction | On / Off (TDHS audio time-stretch) |
-| GBA Colour Correction | On / Off |
-| Interframe Blending | On / Off |
-| Audio | On / Off |
-| JIT Dynarec (GBA) | On / Off |
-| Button Remapping | → sub-screen |
+| **Fast-forward works out of the box** | R Trigger (hold) = speed up · L Trigger (toggle) = lock FF on. Rebindable in Settings → Remap |
+| **mGBA menu always accessible** | Hold SELECT+START for ~0.5 s to open the in-game menu — no button is hardcoded |
+| **Triangle fully remappable** | Triangle is no longer locked as the menu key — assign it to any game button in the Remap screen |
+| **CPU clock choice** | 333 MHz (battery saver) or 444 MHz (default) — pick in Settings |
+| **Pokémon save lag reduced** | `idleOptimization = detect` enabled by default — mGBA auto-detects Emerald/Ruby/Sapphire idle loops |
+| **Saves in their own folder** | `ux0:data/mGBA/saves/` and `ux0:data/mGBA/states/` — no more save files next to ROMs |
+| **No auto-sleep during gameplay** | `sceKernelPowerTick` called every frame (#1970) |
+| **Reduced audio crackling** | Audio buffer 512→1024, BUFFERS 16→24 (#3044) |
+| **Mute during fast-forward** | Toggle in Settings |
+| **FPS counter** | Toggle in Settings |
 
-### Screenshot
-- Captured from `sceDisplayGetFrameBuf()` → PNG via libpng
-- Saved to `ux0:data/GBVitaEX/screenshots/shot####.png`
-- Saved asynchronously on a background thread — no frame stutter
+---
+
+## Features (from mGBA base)
+
+- Full **GBA + GB + GBC** emulation in one app
+- mGUI ROM browser with thumbnails, save states (9 slots), cheats, IPS patches, rewind
+- Bilinear filtering, aspect/stretch/backdrop screen modes
+- 48 kHz audio via dedicated thread (cosine resampler)
+- vita2d double-buffer rendering
+- RTC, solar sensor, gyro, rumble already wired in
+- Screenshot via ScePhotoExport
+- imc0/xmc0 storage support
+- 150+ per-game overrides from `gba_over.h` (idle loops, save type, serial mode)
 
 ---
 
 ## Installation
 
-1. Install `GBVitaEX-v1.4.0.vpk` via VitaShell
-2. Place your **GBA BIOS** at `ux0:data/GBVitaEX/gba_bios.bin` *(optional — built-in open-source BIOS used if absent)*
-3. Place your **GB/GBC BIOS** at `ux0:data/GBVitaEX/gb_bios.bin` *(optional)*
-4. Place ROMs in `ux0:data/GBVitaEX/roms/` (subdirectories supported)
-5. Launch **GBVitaEX** from the LiveArea
+1. Install `MGBAVitaEX-v2.1.0.vpk` via VitaShell
+2. Place ROMs anywhere on the Vita storage — the ROM browser lets you navigate to them
+3. Launch **MGBAVitaEX** from the LiveArea
 
 > **Requires:** HENkaku / Ensō custom firmware
+
+### Upgrading from GBVitaEX v2.0.0
+
+MGBAVitaEX installs as a **separate app** (same Title ID `GBVX00001`, so it replaces the old entry). Your saves in `ux0:data/mGBA/saves/` are untouched.
+
+If you had a stale `config.ini` from a previous install that locked Triangle to the menu, delete it once:
+
+```
+ux0:data/mGBA/config.ini
+```
+
+Then relaunch — MGBAVitaEX will write a fresh config with the correct defaults.
 
 ---
 
 ## Controls
 
-| Vita | GBA / GB |
+| Vita Button | Default Action |
 |---|---|
-| Cross | A (default) |
-| Circle | B (default) |
-| Square | B (default) |
-| Start | Start |
-| Select | Select |
+| Cross / Circle | Confirm / Back (follows system setting) |
 | D-Pad / Left Analog | D-Pad |
-| L Trigger | L |
-| R Trigger | R (or Fast-Forward) |
-| SELECT + START (hold 0.5 s) | Open pause menu |
-| L + R (hold 1 s) | Toggle pause (if neither is FF button) |
+| Start / Select | Start / Select |
+| L Trigger | Fast-forward toggle (rebindable) |
+| R Trigger | Fast-forward hold (rebindable) |
+| Square | Cycle screen mode |
+| Triangle | Free — assign in Remap |
+| SELECT+START (hold ~0.5 s) | Open in-game menu |
+
+All buttons are rebindable in **Settings → Remap**.
 
 ---
 
 ## In-Game Menu
 
-Open with **SELECT + START held for 0.5 seconds**.
+Open with **SELECT + START held for ~0.5 seconds**.
 
 | Item | Description |
 |---|---|
 | Resume | Return to game |
-| Save State | Save to current slot (change with L/R) |
+| Save State | Save to current slot |
 | Load State | Load from current slot |
-| Reset Game | Soft reset |
+| Reset | Soft reset |
 | Change ROM | Return to ROM browser |
 | Settings | Open settings screen |
-| Screenshot | Save PNG to screenshots folder |
-| WiFi Multiplayer: Host | *(GBA only)* Start as host |
-| WiFi Multiplayer: Join | *(GBA only)* Join a host on LAN |
-| Stop WiFi Multiplayer | *(when active)* Disconnect |
-| Link Cable (2P) | *(GB/GBC only)* Start two-player link mode |
-| Stop Link Cable | *(when active)* Stop link mode |
+| Screenshot | Save PNG |
 | Exit | Quit to LiveArea |
 
 ---
 
-## Cheat File Format
+## Settings
 
-`ux0:data/GBVitaEX/cheats/<romname>.cht`
-
-```
-# GBA cheats
-GS XXXXXXXX YYYYYYYY   GameShark / Action Replay
-AR XXXXXXXX YYYYYYYY   Action Replay v3
-CB XXXXX YYYY          CodeBreaker
-
-# GB/GBC cheats
-GB XXXXXXXXX           GameShark GB (9 hex digits)
-GG XXXX-XXXX-XXX       Game Genie
-```
+| Setting | Options |
+|---|---|
+| Screen Mode | With Background / Without Background / Stretched / Fit Aspect Ratio |
+| Screen Filtering | None / Bilinear |
+| Camera | None / Front / Back |
+| Mute during fast-forward | Off / On |
+| Show FPS counter | Off / On |
+| CPU Clock Speed | 333 MHz / 444 MHz |
 
 ---
 
 ## Directory Layout
 
 ```
-ux0:data/GBVitaEX/
-├── gba_bios.bin        (optional)
-├── gb_bios.bin         (optional)
-├── config.ini          (auto-saved settings)
-├── roms/               (ROMs, subdirectories OK)
-├── saves/              (SRAM .sav files)
-├── states/             (save states .stN)
-├── cheats/             (cheat files .cht)
-└── screenshots/        (PNG screenshots)
+ux0:data/mGBA/
+├── config.ini        (auto-saved settings)
+├── saves/            (SRAM .sav files)
+└── states/           (save states)
 ```
 
 ---
@@ -184,34 +122,40 @@ ux0:data/GBVitaEX/
 ## Building from Source
 
 ```bash
-git clone --recurse-submodules https://github.com/Zushikina-kun/GBPSVitaEX.git
-cd GBPSVitaEX
+git clone --recurse-submodules https://github.com/Zushikina-kun/GBVitaEX.git
+cd GBVitaEX
 
-# Requires VitaSDK at /usr/local/vitasdk (devkitPro msys2 shell)
-bash scripts/build.sh clean
-
-# Build + FTP deploy
-bash scripts/build.sh PSVITAIP=192.168.x.x
+# Requires VitaSDK — devkitPro msys2 shell
+bash /tmp/build_v2_final.sh
 ```
+
+VPK output: `build/psp2/MGBAVitaEX.vpk`
 
 ---
 
-## License
+## Credits & Sources
 
-GPL-2.0 (inherited from gpSP). See [LICENSE](LICENSE).  
-mGBA components: MPL-2.0 (compatible with GPL-2.0 in this combination).  
-audio-stretch: BSD-3-Clause.
+| Component | Author | License |
+|---|---|---|
+| [mGBA](https://mgba.io/) | endrift | MPL-2.0 |
+| PSVita port base | mGBA contributors | MPL-2.0 |
+| MGBAVitaEX patches | MGBAVitaEX contributors | MPL-2.0 |
 
 See [CREDITS.md](CREDITS.md) for full attribution.
 
 ---
 
-## Known Limitations
+## License
+
+MPL-2.0 (inherited from mGBA). See [LICENSE](LICENSE).
+
+---
+
+## Known Issues / TODO
 
 | Item | Status |
 |---|---|
-| RFU internet play | LAN only — no relay server |
-| GB link cable over network | Not feasible (microsecond-precise synchronous protocol) |
-| Fast-forward > 6× actual speed | Display capped at monitor refresh; extra frames computed but not shown |
-| SGB border in all screen modes | May clip in integer scale mode |
-| Link Cable P2 ROM selection UI | Currently uses same ROM as P1; different-version support is a future UI task |
+| Fast-forward speed ratio (e.g. 2×, 4×) | PSVita FF is unbounded — ratio control requires Qt-side sync changes not present in PSP2 port |
+| Back touch zones (L2/R2/L3/R3 mapping) | mGBA #3054 — not yet wired in rebind UI |
+| ROM browser L/R page skip | mGBA #3039 — upstream GUI feature |
+| Custom Vita bubbles | Out of scope |

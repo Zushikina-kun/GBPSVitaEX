@@ -1,6 +1,6 @@
-# GBVitaEX v2.x — mGBA PSVita build
+# MGBAVitaEX v2.x — mGBA PSVita build
 #
-# This project builds mGBA's PSVita port with small targeted improvements.
+# This project builds mGBA's PSVita port with targeted improvements.
 # See scripts/build.sh for the full build command.
 #
 # Quick build:
@@ -12,9 +12,11 @@
 #
 # Patches applied (see git diff in vendor/mgba):
 #   main.c       — sceKernelPowerTick fix (#1970), Triangle remap fix (#3039),
-#                  default save/state dirs (#3039), FF mute + FPS configExtra
+#                  default save/state dirs (#3039), FF mute + FPS + CPU clock configExtra,
+#                  SELECT+START menu combo, R-trigger FF held, L-trigger FF toggle defaults,
+#                  idleOptimization "detect" default (Pokémon save lag fix)
 #   psp2-context.c — audio buffer 512→1024, BUFFERS 16→24 (#3044)
-#   CMakeLists.txt — TITLEID MGBA00001→GBVX00001, PSP2 in OS_DEFINES (VFS fix),
+#   CMakeLists.txt — TITLEID GBVX00001, PSP2 in OS_DEFINES (VFS fix),
 #                    bare lib names (linker fix), --start-group (static lib fix),
 #                    BUILD_LTO=OFF flag (LTO bitcode fix)
 #   directories.h  — PATH_MAX guard (VitaSDK build compat)

@@ -1,10 +1,60 @@
 # Changelog
 
-All notable changes to GBVitaEX will be documented in this file.
+All notable changes to MGBAVitaEX will be documented in this file.
 
 ---
 
-## [1.4.0] — 2026-08-19
+## [2.1.0] — 2026-08-18
+
+### Project renamed: GBVitaEX → MGBAVitaEX
+
+This release reflects the actual engine used (mGBA's PSVita port) and adds the three most-requested fixes plus full button remappability.
+
+### Fixed
+
+**Fast-forward was not working (#2)**
+- `mGUI_INPUT_FAST_FORWARD_HELD` and `mGUI_INPUT_FAST_FORWARD_TOGGLE` now have default bindings set at startup.
+- **R Trigger (hold)** = fast-forward while held. **L Trigger (press)** = toggle fast-forward on/off.
+- Both are rebindable in Settings → Remap. Previously no default was set, so fast-forward appeared broken unless the user manually remapped a button.
+
+**Triangle hardcoded as menu key (#3)**
+- Stock mGBA PSVita mapped `SCE_CTRL_TRIANGLE` to `GUI_INPUT_CANCEL`, which is the key that opens the in-game menu — and this mapping could not be removed.
+- Triangle is now completely unbound from menu. It is free to be assigned to any game button in the Remap screen.
+
+**No way to open menu after freeing Triangle (#3)**
+- Holding **SELECT + START for ~0.5 seconds** now opens the in-game menu. This is implemented in `_pollInput` using a 30-frame counter — no extra key needed.
+
+**Pokémon Emerald save lag (#5)**
+- `idleOptimization = "detect"` is now explicitly set as the default. mGBA's idle loop detector eliminates busy-wait loops in Pokémon RSE, reducing CPU work during the Flash 128 KB erase/write cycle.
+
+### Added
+
+**CPU Clock Speed setting**
+- New option in Settings: **CPU Clock Speed** — 333 MHz or 444 MHz (default).
+- 333 MHz saves battery; 444 MHz gives more headroom for games with heavy scenes.
+- The setting is read from config on every launch and applied via `scePowerSetArmClockFrequency`.
+
+### Changed
+
+- App title renamed to **MGBAVitaEX** on LiveArea and in all documentation.
+- VPK filename is now `MGBAVitaEX-v2.1.0.vpk`.
+- TITLEID remains `GBVX00001` — upgrades replace the existing LiveArea entry; saves are untouched.
+
+### Note for existing users
+
+If you had a previous install of GBVitaEX with a stale `config.ini` that maps Triangle to the menu:
+```
+delete: ux0:data/mGBA/config.ini
+```
+Relaunch once — MGBAVitaEX writes a fresh config with the correct defaults.
+
+---
+
+## [2.0.0] — 2026-08-17
+
+### Project rebase: custom engine → mGBA PSVita port
+
+
 
 ### Fixed — Critical Integration Gaps
 
