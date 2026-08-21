@@ -4,6 +4,29 @@ All notable changes to MGBAVitaEX will be documented in this file.
 
 ---
 
+
+
+## [2.1.1] — 2026-08-18
+
+### Performance improvements
+
+**GPU and bus clock raised to maximum**
+- scePowerSetGpuClockFrequency(222) — doubles GPU clock from OS default 111 MHz to 222 MHz
+- scePowerSetBusClockFrequency(222) — raises bus clock to 222 MHz
+- vita2d texture blits, ita2d_clear_screen() and buffer swaps are all GPU operations; at 111 MHz they consume a noticeable fraction of the 16.7ms frame budget. At 222 MHz the GPU completes drawing sooner, leaving more time for the CPU interpreter.
+
+**	hreadedVideo.flushScanline = 0 default**
+- The video proxy thread (enabled by 	hreadedVideo=1) batches all dirty scanline updates per frame instead of flushing one at a time, reducing mutex contention between the emulation thread and the renderer thread on the second Cortex-A9 core.
+
+**Bilinear filtering off by default**
+- Bilinear mode required per-frame CPU pixel-padding: 160 pixel writes (column seam) + 1024-byte memcpy (row seam) per frame to prevent texture bleed at the 240→256 and 160→256 texture boundaries. Nearest-neighbour has no such cost. Users can re-enable bilinear in Configure → Screen filtering.
+
+**Interframe blending off by default**
+- Blending submitted two vita2d draw calls per frame (previous + current frame composited). Off by default gives one draw call per frame. Re-enable in Configure if you want LCD ghosting simulation.
+
+**Frameskip default explicitly set to 0**
+- Ensures a clean baseline. Configure → Frameskip can be set to 1 or 2 for games that still struggle after the above improvements.
+
 ## [2.1.0] — 2026-08-18
 
 ### Project renamed: GBVitaEX → MGBAVitaEX
