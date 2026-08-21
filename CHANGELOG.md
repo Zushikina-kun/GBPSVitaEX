@@ -4,6 +4,43 @@ All notable changes to MGBAVitaEX will be documented in this file.
 
 ---
 
+## [2.1.3] — 2026-08-18
+
+### Added
+
+**Dual (Primary + Alt) bindings for every key**
+- Every game key (A, B, Select, Start, R, L, D-Pad directions) and every interface
+  action (open menu, fast-forward hold/toggle, screenshot, etc.) now has two binding
+  slots: `[Primary]` and `[Alt]`.
+- Both slots are active simultaneously — pressing either physical button fires the
+  action. Set a slot to "Unmapped" to leave it unused.
+- This enables layouts like: Square + Start both = GBA Start, Triangle + Select both =
+  GBA Select, physical Start = open emulator menu.
+- Alt bindings saved to config.ini as `altKeyA`, `altKeySelect`, `altGuiOpenMenu`, etc.
+
+**"Open in-game menu" now visible and configurable in the Remap screen**
+- Previously the menu-open action ("Cancel" in mGBA's internal naming) was visible in
+  the Interface keys section but had confusing labels. It is now labelled
+  "Open in-game menu" with both a Primary and Alt binding slot.
+- Assign any physical button to open the menu with a single press, in addition to the
+  always-on SELECT+START hold combo.
+
+**Interface key labels renamed for clarity**
+- "Cancel" → "Open in-game menu"
+- "Select" → "Menu: Confirm"
+- "Back" → "Menu: Back"
+- Directionals prefixed with "Menu:" to distinguish from game D-Pad
+- Fast forward entries appear at the top of the Interface keys section
+
+### Fixed
+
+**Primary binding save logic**
+- When "Unmapped" (state 0) is selected for a primary binding, `mInputBindKey` is now
+  called with physBit=-1, which correctly unregisters the previous binding rather than
+  leaving a stale entry.
+
+---
+
 ## [2.1.2] — 2026-08-18
 
 ### Fixed

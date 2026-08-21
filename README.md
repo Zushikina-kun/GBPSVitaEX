@@ -14,7 +14,7 @@ Based on [mGBA](https://mgba.io/) by endrift (MPL-2.0).
 |---|---|
 | **Fast-forward works out of the box** | R Trigger (hold) = speed up · L Trigger (toggle) = lock FF on. Rebindable in Remap |
 | **mGBA menu always accessible** | Hold SELECT+START for ~0.5 s to open the in-game menu — no button is hardcoded |
-| **All buttons fully remappable** | Triangle, Square, Cross, Circle, Start, Select, L/R Trigger, L1/R1, L3/R3, back-touch all appear in the Remap screen by name |
+| **All buttons fully remappable with dual bindings** | Every game button and interface function has a Primary and Alt slot — assign two physical buttons to the same action. Triangle, Square, and "Open menu" all configurable. |
 | **CPU clock choice** | 333 MHz (battery saver) or 444 MHz (default) — pick in Settings |
 | **GPU clock raised to 222 MHz** | Vita OS defaults GPU to 111 MHz; we raise it to 222 MHz for faster vita2d throughput |
 | **Pokémon save lag reduced** | `idleOptimization = detect` enabled by default — mGBA auto-detects Emerald/Ruby/Sapphire idle loops |
@@ -42,23 +42,17 @@ Based on [mGBA](https://mgba.io/) by endrift (MPL-2.0).
 
 ## Installation
 
-1. Install `MGBAVitaEX-v2.1.2.vpk` via VitaShell
+1. Install `MGBAVitaEX-v2.1.3.vpk` via VitaShell
 2. Place ROMs anywhere on the Vita storage — the ROM browser lets you navigate to them
 3. Launch **MGBAVitaEX** from the LiveArea
 
 > **Requires:** HENkaku / Ensō custom firmware
 
-### Upgrading from GBVitaEX v2.0.0
+### Upgrading from any previous version
 
-MGBAVitaEX installs as a **separate app** (same Title ID `GBVX00001`, so it replaces the old entry). Your saves in `ux0:data/mGBA/saves/` are untouched.
+MGBAVitaEX uses Title ID `GBVX00001` — installing a new VPK replaces the existing entry on LiveArea. Your saves in `ux0:data/mGBA/saves/` are never touched.
 
-If you had a stale `config.ini` from a previous install that locked Triangle to the menu, delete it once:
-
-```
-ux0:data/mGBA/config.ini
-```
-
-Then relaunch — MGBAVitaEX will write a fresh config with the correct defaults.
+**Always delete `ux0:data/mGBA/config.ini` when upgrading** so the new defaults and key bindings take effect cleanly. Relaunch once — a fresh config is written automatically.
 
 ---
 
@@ -66,20 +60,20 @@ Then relaunch — MGBAVitaEX will write a fresh config with the correct defaults
 
 | Vita Button | Default Game Action | Default Interface Action |
 |---|---|---|
-| Cross | A | Confirm |
-| Circle | B | Back |
-| Triangle | A (remappable) | — |
-| Square | B (remappable) | Cycle screen mode |
+| Cross | A (Primary) | Menu: Confirm |
+| Circle | B (Primary) | Menu: Back |
+| Triangle | A (Alt — remappable) | — |
+| Square | B (Alt — remappable) | Cycle screen mode |
 | Start | Start | — |
 | Select | Select | — |
 | D-Pad / Left Analog | D-Pad | Navigate menus |
-| L Trigger | L button | Fast-forward toggle |
-| R Trigger | R button | Fast-forward hold |
+| L Trigger | L button | Fast forward (toggle) |
+| R Trigger | R button | Fast forward (hold) |
 | L1 | L button | — |
 | R1 | R button | — |
-| SELECT+START (hold ~0.5 s) | — | Open in-game menu |
+| SELECT+START (hold ~0.5 s) | — | Open in-game menu (hardcoded fallback) |
 
-Every entry above is rebindable. See the Remap section below.
+Every row is remappable via the Remap screen — see Button Remapping below.
 
 ---
 
@@ -87,28 +81,53 @@ Every entry above is rebindable. See the Remap section below.
 
 Open the remap screen via **SELECT+START (hold) → Configure → Remap keys**.
 
+Every key has **two binding slots — Primary and Alt**. Both fire simultaneously, so you can have two physical buttons trigger the same GBA action. Set either slot to "Unmapped" to leave it unused.
+
 The screen has two sections:
 
-**Game keys** — what each GBA/GB button does on the Vita hardware:
-- A, B, Start, Select, Up, Down, Left, Right, L, R
-- Each can be assigned to any physical button: Select, L3, R3, Start, Up, Right, Down, Left, L Trigger, R Trigger, L1, R1, Triangle, Circle, Cross, Square
+**Game keys** — what each GBA/GB button does:
+- A, B, Select, Start, Right, Left, Up, Down, R, L
+- Each has a `[Primary]` row and an `[Alt]` row
+- All 16 Vita physical buttons appear by name in the dropdown: Select, L3, R3, Start, Up, Right, Down, Left, L Trigger, R Trigger, L1, R1, Triangle, Circle, Cross, Square
 
 **Interface keys** — what each emulator function does:
-- Fast forward (held), Fast forward (toggle), Screen mode, Take screenshot, Mute (toggle)
-- **Cancel** — opens the in-game menu (SELECT+START combo always works too)
+- Open in-game menu, Fast forward (hold), Fast forward (toggle), Cycle screen mode, Take screenshot, Mute (toggle), Menu: Confirm, Menu: Back, Menu: Up/Down/Left/Right, solar brightness
+- Each also has a `[Primary]` and `[Alt]` row
 
-### Example: swap Square/Triangle to act as Start/Select
+Hit **Save** to apply all changes. Hit **Cancel (discard)** to throw away all changes.
 
-1. Remap → Game keys → **Start** → set to "Square"
-2. Remap → Game keys → **Select** → set to "Triangle"
-3. Remap → Interface keys → **Cancel** → set to "Start" (physical Start now opens menu)
-4. Remap → Interface keys → **Fast forward (toggle)** → set to "Select" (optional)
-5. Save
+> SELECT+START hold always opens the in-game menu regardless of any remap — it is a hardcoded fallback.
 
-### Example: put fast-forward on back-touch
+---
 
-1. Remap → Interface keys → **Fast forward (held)** → set to "L3" or "R3" (back-touch zones)
-2. Save
+### Example: Square+Start = GBA Start, Triangle+Select = GBA Select, physical Start = open menu
+
+1. Remap → Game keys → **Start [Primary]** → Square
+2. Remap → Game keys → **Start [Alt]** → Start  *(physical Start still fires GBA Start)*
+3. Remap → Game keys → **Select [Primary]** → Triangle
+4. Remap → Game keys → **Select [Alt]** → Select  *(physical Select still fires GBA Select)*
+5. Remap → Interface keys → **Open in-game menu [Primary]** → Start
+6. Hit **Save**
+
+Result: Square and physical Start both = GBA Start. Triangle and physical Select both = GBA Select. Physical Start also opens the emulator menu.
+
+---
+
+### Example: two buttons for A, two for B
+
+1. Remap → Game keys → **A [Primary]** → Cross *(default)*
+2. Remap → Game keys → **A [Alt]** → Triangle
+3. Remap → Game keys → **B [Primary]** → Circle *(default)*
+4. Remap → Game keys → **B [Alt]** → Square
+5. Hit **Save**
+
+---
+
+### Example: fast-forward on back-touch
+
+1. Remap → Interface keys → **Fast forward (hold) [Primary]** → R Trigger *(default)*
+2. Remap → Interface keys → **Fast forward (hold) [Alt]** → R3 *(back-touch right zone)*
+3. Hit **Save**
 
 ---
 

@@ -1,7 +1,7 @@
 # MGBAVitaEX — Future Plans & Technical Roadmap
 
 This document records the research, decisions, and recommendations for future improvements.
-Updated after v2.1.2.
+Updated after v2.1.3.
 
 ---
 
@@ -236,6 +236,9 @@ Estimated effort: **half a day**.
 | Interframe blending off by default | v2.1.1 | One draw call per frame instead of two |
 | Plain text remap button labels | v2.1.2 | "Triangle" instead of icon glyph |
 | Triangle = A, Square = B defaults | v2.1.2 | Both fully remappable |
+| Dual Primary+Alt bindings per key | v2.1.3 | mgbaex_altGameMap + mgbaex_altGuiMap, merged at poll time |
+| "Open in-game menu" labelled + configurable | v2.1.3 | Visible in Interface keys section with both slots |
+| Interface key labels renamed for clarity | v2.1.3 | Cancel→"Open in-game menu", Menu: prefixes, FF at top |
 
 ---
 
