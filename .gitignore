@@ -24,3 +24,5 @@ Thumbs.db
 
 # Keep the release VPK (tracked in git for GitHub Releases)
 !release/*.vpk
+
+release/notes_*.md
