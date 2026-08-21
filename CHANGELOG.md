@@ -4,72 +4,95 @@ All notable changes to MGBAVitaEX will be documented in this file.
 
 ---
 
+## [2.1.2] — 2026-08-18
 
+### Fixed
+
+**Remap screen showed icon glyphs instead of button names**
+- Triangle, Circle, Cross, Square were displayed as raw font icon bytes (`\1\xC` etc.)
+  instead of readable names in the Remap screen.
+- Now shows plain text: "Triangle", "Circle", "Cross", "Square", "L Trigger", "R Trigger".
+
+**Triangle and Square had no default game bindings**
+- Triangle is now mapped to GBA A by default (second A button — useful for many games).
+- Square is now mapped to GBA B by default (second B button).
+- Both are fully remappable in Remap → Game keys.
+
+---
 
 ## [2.1.1] — 2026-08-18
 
 ### Performance improvements
 
-**GPU and bus clock raised to maximum**
-- scePowerSetGpuClockFrequency(222) — doubles GPU clock from OS default 111 MHz to 222 MHz
-- scePowerSetBusClockFrequency(222) — raises bus clock to 222 MHz
-- vita2d texture blits, ita2d_clear_screen() and buffer swaps are all GPU operations; at 111 MHz they consume a noticeable fraction of the 16.7ms frame budget. At 222 MHz the GPU completes drawing sooner, leaving more time for the CPU interpreter.
+**GPU clock raised to 222 MHz** (from OS default 111 MHz)
+- `scePowerSetGpuClockFrequency(222)` — vita2d texture blits, `vita2d_clear_screen()`
+  and buffer swaps are all GPU operations. At 111 MHz they consumed a noticeable
+  fraction of the 16.7ms frame budget. At 222 MHz the GPU completes drawing sooner,
+  leaving more time for the CPU interpreter.
+- `scePowerSetBusClockFrequency(222)` — bus clock also raised to 222 MHz.
 
-**	hreadedVideo.flushScanline = 0 default**
-- The video proxy thread (enabled by 	hreadedVideo=1) batches all dirty scanline updates per frame instead of flushing one at a time, reducing mutex contention between the emulation thread and the renderer thread on the second Cortex-A9 core.
+**`threadedVideo.flushScanline = 0` default**
+- The video proxy thread (enabled by `threadedVideo=1`) now batches all dirty scanline
+  updates per frame instead of flushing one at a time. Reduces mutex contention between
+  the emulation thread and the renderer thread running on the second Cortex-A9 core.
 
 **Bilinear filtering off by default**
-- Bilinear mode required per-frame CPU pixel-padding: 160 pixel writes (column seam) + 1024-byte memcpy (row seam) per frame to prevent texture bleed at the 240→256 and 160→256 texture boundaries. Nearest-neighbour has no such cost. Users can re-enable bilinear in Configure → Screen filtering.
+- Bilinear mode required per-frame CPU pixel-padding: 160 pixel writes (column seam)
+  + 1024-byte memcpy (row seam) per frame to prevent texture bleed at the 240→256 and
+  160→256 texture boundaries. Nearest-neighbour has no such cost.
+- Re-enable in Configure → Screen filtering if you prefer smooth scaling.
 
 **Interframe blending off by default**
-- Blending submitted two vita2d draw calls per frame (previous + current frame composited). Off by default gives one draw call per frame. Re-enable in Configure if you want LCD ghosting simulation.
+- Blending submitted two vita2d draw calls per frame (previous + current frame
+  composited). Off by default = one draw call per frame.
+- Re-enable in Configure if you want LCD ghosting simulation.
 
 **Frameskip default explicitly set to 0**
-- Ensures a clean baseline. Configure → Frameskip can be set to 1 or 2 for games that still struggle after the above improvements.
+- Ensures a clean baseline. Configure → Frameskip can be raised to 1 or 2 for games
+  that still struggle after the above improvements.
+
+---
 
 ## [2.1.0] — 2026-08-18
 
 ### Project renamed: GBVitaEX → MGBAVitaEX
 
-This release reflects the actual engine used (mGBA's PSVita port) and adds the three most-requested fixes plus full button remappability.
+Reflects the actual engine used (mGBA's PSVita port).
 
 ### Fixed
 
-**Fast-forward was not working (#2)**
-- `mGUI_INPUT_FAST_FORWARD_HELD` and `mGUI_INPUT_FAST_FORWARD_TOGGLE` now have default bindings set at startup.
-- **R Trigger (hold)** = fast-forward while held. **L Trigger (press)** = toggle fast-forward on/off.
-- Both are rebindable in Settings → Remap. Previously no default was set, so fast-forward appeared broken unless the user manually remapped a button.
+**Fast-forward was not working**
+- `mGUI_INPUT_FAST_FORWARD_HELD` and `mGUI_INPUT_FAST_FORWARD_TOGGLE` now have default
+  bindings set at startup via `mInputBindKey`.
+- R Trigger (hold) = fast-forward while held. L Trigger (press) = toggle on/off.
+- Both are rebindable in Remap. Previously no default was set — fast-forward appeared
+  broken unless the user manually assigned a button.
 
-**Triangle hardcoded as menu key (#3)**
-- Stock mGBA PSVita mapped `SCE_CTRL_TRIANGLE` to `GUI_INPUT_CANCEL`, which is the key that opens the in-game menu — and this mapping could not be removed.
-- Triangle is now completely unbound from menu. It is free to be assigned to any game button in the Remap screen.
+**Triangle hardcoded as menu key (mGBA issue #3039)**
+- Stock mGBA PSVita mapped `SCE_CTRL_TRIANGLE` to `GUI_INPUT_CANCEL` (the key that
+  opens the in-game menu). That mapping could not be removed.
+- Triangle is now fully free to be assigned to any game button.
 
-**No way to open menu after freeing Triangle (#3)**
-- Holding **SELECT + START for ~0.5 seconds** now opens the in-game menu. This is implemented in `_pollInput` using a 30-frame counter — no extra key needed.
+**No way to open menu without Triangle**
+- Holding SELECT + START for ~0.5 seconds now opens the in-game menu.
+- Implemented as a 30-frame counter in `_pollInput` — fires `GUI_INPUT_CANCEL` once,
+  then requires release before firing again.
 
-**Pokémon Emerald save lag (#5)**
-- `idleOptimization = "detect"` is now explicitly set as the default. mGBA's idle loop detector eliminates busy-wait loops in Pokémon RSE, reducing CPU work during the Flash 128 KB erase/write cycle.
+**Pokemon Emerald save lag**
+- `idleOptimization = "detect"` set as default. mGBA's idle loop detector eliminates
+  busy-wait loops in RSE, reducing CPU work during Flash 128 KB erase/write.
 
 ### Added
 
-**CPU Clock Speed setting**
-- New option in Settings: **CPU Clock Speed** — 333 MHz or 444 MHz (default).
-- 333 MHz saves battery; 444 MHz gives more headroom for games with heavy scenes.
-- The setting is read from config on every launch and applied via `scePowerSetArmClockFrequency`.
+**CPU Clock Speed setting in Configure menu**
+- 333 MHz (battery saver) or 444 MHz (default).
+- Applied via `scePowerSetArmClockFrequency` on every launch from config.
 
 ### Changed
 
-- App title renamed to **MGBAVitaEX** on LiveArea and in all documentation.
-- VPK filename is now `MGBAVitaEX-v2.1.0.vpk`.
-- TITLEID remains `GBVX00001` — upgrades replace the existing LiveArea entry; saves are untouched.
-
-### Note for existing users
-
-If you had a previous install of GBVitaEX with a stale `config.ini` that maps Triangle to the menu:
-```
-delete: ux0:data/mGBA/config.ini
-```
-Relaunch once — MGBAVitaEX writes a fresh config with the correct defaults.
+- App LiveArea title renamed to MGBAVitaEX.
+- TITLEID remains `GBVX00001` — upgrade replaces existing entry, saves untouched.
+- VPK filename: `MGBAVitaEX-v2.1.0.vpk`.
 
 ---
 
@@ -77,225 +100,20 @@ Relaunch once — MGBAVitaEX writes a fresh config with the correct defaults.
 
 ### Project rebase: custom engine → mGBA PSVita port
 
+The original custom engine (gpSP JIT + mGBA hybrid) had an untested dynarec, crashes on
+ROM load, and a broken UI. Rebased on mGBA's official PSVita port which ships working VPKs
+and has a battle-tested mGUI ROM browser.
 
+### Added / patched on top of mGBA base
 
-### Fixed — Critical Integration Gaps
-
-These features were built in v1.3.0 but were dead code — nothing in the application ever activated them. All are now fully wired.
-
-**GB Link Cable — P2 core never stepped (Critical)**
-- `gb_engine_run_frame()` now calls `gb_link_run_frame()` immediately after P1's `runFrame()` when `gb_link_active()` is true.
-- Both cores run on the same thread in tight lock-step per frame, which is the correct model for `GBSIOLockstep`'s synchronous signal/wait callbacks.
-- Pokémon trading, Tetris 2-player, and other link-cable games are now functional.
-
-**GBA RFU Multiplayer — never triggered (Critical)**
-- `rfu_vita_net_start()` is now callable from the in-game menu (Menu → WiFi Multiplayer: Host / Join).
-- `load_gamepak()` now uses `SERIAL_MODE_AUTO` instead of `SERIAL_MODE_DISABLED`, so `gba_over.h` flags take effect: Pokémon FR/LG/Emerald/Ruby/Sapphire, Mario Golf, Megaman BN5/6, and 20+ other RFU-capable games get `serial_mode = SERIAL_MODE_RFU` set automatically on load.
-- Menu now shows WiFi status in the title bar and RFU/stop options dynamically.
-- Menu shows Link Cable options for GB/GBC games.
-
-### Fixed — Audio
-
-**`stretch_flush()` missing before `stretch_deinit()`**
-- Added `stretch_flush()` call in `audio_output_shutdown()` and in the normal-speed path of `audio_output_submit_ff()`.
-- Eliminates the audible dropout when releasing fast-forward or on app exit.
-
-### Fixed — Input
-
-**Pause hotkey conflict with L1 as FF button**
-- The L+R pause hotkey guard now excludes both `VBTN_L1` and `VBTN_R1`, not just R1.
-- If either trigger is configured as the fast-forward button, the L+R pause combo is disabled for that session.
-
-**`s_pause_hold` not reset on state transitions**
-- `s_pause_hold` is now explicitly reset to 0 when entering `UI_STATE_MENU`, `UI_STATE_SETTINGS`, and `UI_STATE_KEYMAPPER`, preventing phantom pause triggers on return to `UI_STATE_RUNNING`.
-
-### Fixed — RFU Protocol
-
-**`netplay_num_clients` set incorrectly on non-sequential join**
-- Changed from `netplay_num_clients = slot` to `netplay_num_clients = max(netplay_num_clients, slot)`.
-- Prevents the client count from being wrong when clients join out of order or rejoin after a disconnect.
-
-### Changed
-
-- In-game menu is now **dynamic**: items shown depend on the active core (GBA → WiFi options; GB/GBC → Link Cable options) and current multiplayer state (connected → Stop options shown instead of Start options).
-- Menu shows WiFi status string from `rfu_vita_net_status()` next to the FPS counter when RFU is active.
-- Menu shows "Link Cable active" indicator when GB link is running.
-- Link Cable (single-device) activated via **Menu → Link Cable (2P)** — both players load the same ROM. P2 save is stored as `<romname>.p2.sav`.
-
----
-
-## [1.3.0] — 2026-08-19
-
-### Added
-
-#### Fast-forward pitch correction (TDHS)
-- Audio no longer sounds chipmunk during fast-forward.
-- Uses Time-Domain Harmonic Scaling (TDHS) from [dbry/audio-stretch](https://github.com/dbry/audio-stretch) (BSD licence), a lightweight algorithm requiring only ~1 multiply + 2 adds per output sample — about 0.5 ms overhead at 444 MHz.
-- Pitch correction is togglable: **Settings → FF Pitch Correction** (On by default).
-- Works for all FF speeds from 1.25× to 8×. Above 4× the library uses dual-instance cascade mode automatically.
-- GB/GBC audio is unaffected (it runs in a separate thread and delivers at the correct pitch by design).
-
-#### GBA RFU Wireless Adapter multiplayer (LAN WiFi)
-- Pokémon Fire Red/Leaf Green/Emerald, Mario Golf, Megaman Battle Network 5/6, Mario Tennis, and other RFU-compatible games can now be played multiplayer over local WiFi.
-- Implemented via a custom UDP transport over SceNet — no RetroArch or internet relay needed.
-- One Vita acts as **Host** (player 1); others join as **Clients** via UDP broadcast discovery on the LAN.
-- Protocol: `[sender_id:2][dest_id:2][payload:N]` over UDP port 7354 (broadcast + unicast).
-- Working games (confirmed by davidgfnet): Pokémon series, Mario Golf, Megaman BN5/6.
-- Games with latency issues (racing/action): Digimon Racing, Shrek SuperSlam.
-- Maximum 4 clients + 1 host = 5 players (RFU hardware limit).
-- **Note:** same LAN subnet required. Internet play not supported without a relay server.
-
-#### GB/GBC single-device link cable
-- Two GB/GBC ROMs can be connected via a software link cable on a single Vita.
-- Both cores run in lock-step using mGBA's `GBSIOLockstep` infrastructure.
-- Enables Pokémon trading/battling between two games, Tetris two-player, etc.
-- Player 2's screen is accessible via `gb_link_get_p2_framebuffer()` — future UI will display it in a split-screen layout.
-- Access via menu (coming in next UI update): **Menu → Link Cable → Load P2 ROM**.
-
-#### Pause hotkey
-- **Hold L Trigger + R Trigger for 1 second** to toggle pause without opening the menu.
-- Paused state shown in HUD in red: `PAUSED  (hold L+R to resume)`.
-- Hotkey is automatically disabled if R Trigger is configured as the fast-forward button (to avoid conflicts).
-
-#### Per-game compatibility database (gba_over.h)
-- gpSP's full per-game override database (`gba_over.h`) is already **compiled in** — no separate file needed.
-- Contains idle-loop elimination targets, save type overrides (EEPROM, Flash 64K/128K), RTC flags, rumble flags, and RFU flags for 150+ GBA titles — applied automatically on ROM load.
-- Notable entries: Golden Sun 1/2 (translation gates), all Pokémon titles (Flash 128K + RTC + RFU), Drill Dozer (rumble), WarioWare Twisted (rumble), F-Zero (idle loop), Castlevania (idle loop).
-
-### Changed
-- HUD now shows `PAUSED` in red when paused, `>> X.Xx` with FPS during FF.
-- `stubs.c` cleaned up: `netpacket_send`, `netpacket_poll_receive`, `netplay_client_id`, `netplay_num_clients` moved to `rfu_vita_net.c` (real implementations).
-- `projectVersion` in `stubs.c` updated to `"1.3.0"`.
-
----
-
-## [1.2.0] — 2026-08-19
-
-### Fixed
-
-- **Fast-forward vsync cap** — fast-forward was capped at 60 FPS because
-  `vita2d_swap_buffers()` internally waits for display vsync. When FF is
-  activated `vita2d_set_vblank_wait(0)` now disables vsync locking so the
-  CPU can run emulation frames as fast as hardware allows (up to 8× on
-  500 MHz). Vsync is restored immediately when FF is released or when the
-  menu opens. HUD accurately reflects the real achieved multiplier.
-
-- **Screenshot stutter eliminated** — PNG encoding of a full 960×544
-  framebuffer took 60–100 ms synchronously, dropping 4–6 frames. Screenshot
-  now copies the raw framebuffer immediately (< 1 ms), then spawns a
-  `SceKernelThread` to encode and write the PNG in the background. The main
-  emulation loop is never blocked.
-
-- **SCE_SYSMODULE_HTTPS removed** — was loaded at startup but never used.
-  Removed to cut startup time and reduce memory footprint.
-
-### Added
-
-- **Proper git submodule registration** — all four vendor repos (gpsp, mGBA,
-  TempGBA, FrogGBA) are now real git submodules tracked in `.gitmodules` at
-  pinned commits. Cloning with `git clone --recurse-submodules` now works
-  correctly and pulls all source dependencies automatically. No manual vendor
-  setup required.
-
----
-
-## [1.1.0] — 2026-08-19
-
-### Fixed
-- **Save state audio silence** — after loading a GBA save state, audio was dead. Fixed by calling `sound_frequency_changed()` after `gba_load_state()` to rebuild PSG frequency step tables from restored state. This was a known upstream gpSP issue confirmed in the libretro/gpsp GitHub tracker.
-- **Vita auto-suspend during gameplay** — the Vita's watchdog was never ticked, causing the screen to dim and the system to sleep mid-game. `sceKernelPowerTick(SCE_KERNEL_POWER_TICK_DISABLE_AUTO_SUSPEND)` is now called every frame.
-- **JIT VM domain failure silent crash** — `sceKernelOpenVMDomain()` return value was not checked. It now gracefully falls back to the interpreter if the call fails (e.g. on unusual CFW configs).
-
-### Added
-
-#### Fast-Forward
-- Configurable fast-forward speed: **1.25× to 8×** in 0.25× steps
-- Activated by holding the configured button (default: R Trigger)
-- Speed shown in HUD as `XX.X fps  >> X.Xx` when active
-- Interframe blending is automatically disabled during fast-forward to reduce blur
-- Set via Settings → **Fast-Forward Speed** (slider: 125% – 800%)
-- Trigger button configurable: Settings → **Fast-Forward Button** (Off / R Trigger / Back-Touch L / Back-Touch R / Triangle)
-
-#### Button Remapping
-- Every GBA/GB button (A, B, Select, Start, Up, Down, Left, Right, L, R) can be remapped to any Vita physical button
-- Access via **Settings → Button Remapping**
-- On the remapper screen:
-  - **Up/Down** — select which GBA button to remap
-  - **Cross** — start listening for a Vita button press to assign
-  - **Triangle** — clear the current assignment
-  - **Square** — reset ALL bindings to defaults
-  - **Circle** — go back
-- Multiple Vita buttons can map to the same GBA button
-- Default mapping: Cross=A, Circle=B, Square=B, L=L, R=R, Start=Start, Select=Select, D-Pad=D-Pad
-
-#### Persistent Settings
-- All settings (clock, screen mode, volume, frameskip, FF speed, FF button, colour correction, interframe blend, audio, dynarec, button map) are saved to `ux0:data/GBVitaEX/config.ini` on exit or when leaving the settings screen
-- Automatically loaded on next launch
-- Plain INI format — can be edited manually with a text editor
-
-### Changed
-- HUD overlay now shows fast-forward indicator with speed multiplier
-- Version bumped to 1.1.0
-
----
-
-## [1.0.0] — 2026-08-18
-
-### Initial Release
-
-#### GBA Engine (gpSP)
-- ARMv7 JIT dynarec enabled — GBA ARM7TDMI code is recompiled to native Cortex-A9 instructions at runtime via `sceKernelAllocMemBlock` + `sceKernelOpenVMDomain`
-- ROM translation cache: 10 MB (ROM) + 512 KB (RAM), allocated as uncached RWX memory
-- Interpreter fallback when dynarec is disabled in settings
-- Open-source BIOS replacement (Normmatt) bundled; official `gba_bios.bin` used when present
-- Full GBA hardware: DMA, timers, all 6 audio channels (4 PSG + 2 DirectSound FIFO), OAM, affine backgrounds
-- Save type auto-detection: SRAM, Flash 64K/128K, EEPROM 4K/64K
-- RTC support: Pokémon time-based events, berry growth
-- Solar sensor: Boktai series
-- Tilt/gyro: Yoshi Topsy-Turvy, Kirby Tilt 'n' Tumble (via `sceMotionGetSensorState`)
-- Rumble: Game Boy Player emulation via `sceCtrlSetActuator`
-- GameShark, Action Replay v1–v3, CodeBreaker cheat codes via `.cht` file
-- Frameskip: per-frame `skip_next_frame` control, 0–5 configurable
-
-#### GB/GBC Engine (mGBA)
-- SM83 (Sharp LR35902) interpreter — mGBA's accurate GB/GBC core
-- Full CGB (Game Boy Color) support including HDMA, palette registers, speed switch
-- All MBC types: MBC1, MBC2, MBC3 (+RTC), MBC5 (+rumble), MBC6, MBC7 (tilt), HuC-1, HuC-3, Pocket Camera, TAMA5, and unlicensed mappers
-- SGB (Super Game Boy) border display
-- Auto-detection of DMG/CGB/AGB mode from cart header
-- Official GB/GBC BIOS supported when `gb_bios.bin` is present
-- 131072 Hz audio resampled to 48000 Hz via cosine interpolation in a dedicated audio thread
-- GameShark and Game Genie cheat support via mGBA's cheat device
-- Per-game frameskip via `gb->video.frameskip`
-
-#### Display
-- vita2d double-buffer rendering (two XBGR8888 textures for GBA, RGB565 for GB)
-- Screen modes: Aspect-correct, Fullscreen, Integer scale
-- GBA LCD colour correction (32768-entry LUT, hardware-accurate gamma)
-- Interframe blending via `vita2d_draw_texture_tint_part_scale` at 50% alpha
-- FPS counter overlay
-
-#### Audio
-- GBA: gpSP ring buffer drained per-frame to `sceAudioOutOutput`
-- GB/GBC: dedicated `gb_audio` thread, 16 × 512-sample ring buffers
-- Volume 0–100% applied live via `sceAudioOutSetVolume`
-- Audio mute respected by both engines immediately
-
-#### UI
-- ROM browser: paginated directory listing, `.gba/.agb/.gb/.gbc/.gbz/.bin` files
-- In-game menu: save/load state (10 slots), reset, change ROM, screenshot, settings
-- Settings: CPU clock (333/444/500 MHz), screen mode, volume, frameskip, colour correction, interframe blend, audio, dynarec
-- Screenshot: `sceDisplayGetFrameBuf` → libpng PNG encode
-
-#### Build
-- CMake 3.12+ with VitaSDK toolchain
-- `vita_create_self` + `vita_create_vpk` packaging
-- `bash scripts/build.sh [clean] [PSVITAIP=x.x.x.x]`
-
-### Known Limitations (v1.0.0)
-- Fast-forward (2×) is not yet implemented (flag declared, not wired to double execution)
-- Pause hotkey (without opening menu) not yet implemented
-- Wireless Adapter (RFU) multiplayer not yet working on Vita (netplay stubs are no-ops)
-- GB/GBC link cable emulation not implemented
-- Screenshot encoding is synchronous — may cause a brief frame stutter
-- SGB border is rendered by mGBA but may not display correctly at all screen modes
+- `sceKernelPowerTick(SCE_KERNEL_POWER_TICK_DISABLE_AUTO_SUSPEND)` every frame — fixes
+  Vita auto-sleep during gameplay (mGBA issue #1970)
+- Audio buffer 512→1024, BUFFERS 16→24 — reduces crackling (#3044)
+- Default save dir: `ux0:data/mGBA/saves/` — saves no longer clutter ROM folder (#3039)
+- Default state dir: `ux0:data/mGBA/states/`
+- Triangle freed from `GUI_INPUT_CANCEL` — Triangle no longer hardcoded as menu key (#3039)
+- configExtra additions: Mute during fast-forward, Show FPS counter
+- TITLEID set to `GBVX00001`
+- `PSP2` added to `OS_DEFINES` (fixes VFS/directory on Vita)
+- `BUILD_LTO=OFF` — LTO produces bitcode-only `.a` files that break `--start-group`
+- `PATH_MAX` guard in `directories.h` for VitaSDK build compatibility

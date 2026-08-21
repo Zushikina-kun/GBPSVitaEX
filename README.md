@@ -12,10 +12,11 @@ Based on [mGBA](https://mgba.io/) by endrift (MPL-2.0).
 
 | Fix / Feature | Details |
 |---|---|
-| **Fast-forward works out of the box** | R Trigger (hold) = speed up · L Trigger (toggle) = lock FF on. Rebindable in Settings → Remap |
+| **Fast-forward works out of the box** | R Trigger (hold) = speed up · L Trigger (toggle) = lock FF on. Rebindable in Remap |
 | **mGBA menu always accessible** | Hold SELECT+START for ~0.5 s to open the in-game menu — no button is hardcoded |
-| **Triangle fully remappable** | Triangle is no longer locked as the menu key — assign it to any game button in the Remap screen |
+| **All buttons fully remappable** | Triangle, Square, Cross, Circle, Start, Select, L/R Trigger, L1/R1, L3/R3, back-touch all appear in the Remap screen by name |
 | **CPU clock choice** | 333 MHz (battery saver) or 444 MHz (default) — pick in Settings |
+| **GPU clock raised to 222 MHz** | Vita OS defaults GPU to 111 MHz; we raise it to 222 MHz for faster vita2d throughput |
 | **Pokémon save lag reduced** | `idleOptimization = detect` enabled by default — mGBA auto-detects Emerald/Ruby/Sapphire idle loops |
 | **Saves in their own folder** | `ux0:data/mGBA/saves/` and `ux0:data/mGBA/states/` — no more save files next to ROMs |
 | **No auto-sleep during gameplay** | `sceKernelPowerTick` called every frame (#1970) |
@@ -41,7 +42,7 @@ Based on [mGBA](https://mgba.io/) by endrift (MPL-2.0).
 
 ## Installation
 
-1. Install `MGBAVitaEX-v2.1.0.vpk` via VitaShell
+1. Install `MGBAVitaEX-v2.1.2.vpk` via VitaShell
 2. Place ROMs anywhere on the Vita storage — the ROM browser lets you navigate to them
 3. Launch **MGBAVitaEX** from the LiveArea
 
@@ -63,18 +64,51 @@ Then relaunch — MGBAVitaEX will write a fresh config with the correct defaults
 
 ## Controls
 
-| Vita Button | Default Action |
-|---|---|
-| Cross / Circle | Confirm / Back (follows system setting) |
-| D-Pad / Left Analog | D-Pad |
-| Start / Select | Start / Select |
-| L Trigger | Fast-forward toggle (rebindable) |
-| R Trigger | Fast-forward hold (rebindable) |
-| Square | Cycle screen mode |
-| Triangle | Free — assign in Remap |
-| SELECT+START (hold ~0.5 s) | Open in-game menu |
+| Vita Button | Default Game Action | Default Interface Action |
+|---|---|---|
+| Cross | A | Confirm |
+| Circle | B | Back |
+| Triangle | A (remappable) | — |
+| Square | B (remappable) | Cycle screen mode |
+| Start | Start | — |
+| Select | Select | — |
+| D-Pad / Left Analog | D-Pad | Navigate menus |
+| L Trigger | L button | Fast-forward toggle |
+| R Trigger | R button | Fast-forward hold |
+| L1 | L button | — |
+| R1 | R button | — |
+| SELECT+START (hold ~0.5 s) | — | Open in-game menu |
 
-All buttons are rebindable in **Settings → Remap**.
+Every entry above is rebindable. See the Remap section below.
+
+---
+
+## Button Remapping
+
+Open the remap screen via **SELECT+START (hold) → Configure → Remap keys**.
+
+The screen has two sections:
+
+**Game keys** — what each GBA/GB button does on the Vita hardware:
+- A, B, Start, Select, Up, Down, Left, Right, L, R
+- Each can be assigned to any physical button: Select, L3, R3, Start, Up, Right, Down, Left, L Trigger, R Trigger, L1, R1, Triangle, Circle, Cross, Square
+
+**Interface keys** — what each emulator function does:
+- Fast forward (held), Fast forward (toggle), Screen mode, Take screenshot, Mute (toggle)
+- **Cancel** — opens the in-game menu (SELECT+START combo always works too)
+
+### Example: swap Square/Triangle to act as Start/Select
+
+1. Remap → Game keys → **Start** → set to "Square"
+2. Remap → Game keys → **Select** → set to "Triangle"
+3. Remap → Interface keys → **Cancel** → set to "Start" (physical Start now opens menu)
+4. Remap → Interface keys → **Fast forward (toggle)** → set to "Select" (optional)
+5. Save
+
+### Example: put fast-forward on back-touch
+
+1. Remap → Interface keys → **Fast forward (held)** → set to "L3" or "R3" (back-touch zones)
+2. Save
 
 ---
 
@@ -151,11 +185,33 @@ MPL-2.0 (inherited from mGBA). See [LICENSE](LICENSE).
 
 ---
 
-## Known Issues / TODO
+## Performance Tips
+
+MGBAVitaEX runs the full GBA library at 60fps for the vast majority of games. For the
+small number of CPU-heavy titles (certain Fire Emblem maps, some Castlevania sections),
+these settings help:
+
+1. **Configure → Frameskip → 1** — emulates at full speed but renders every other frame.
+   Most games look fine at frameskip 1; saves ~30% GPU time per frame.
+2. **CPU Clock Speed → 444 MHz** — make sure you're not on 333 MHz.
+3. **Screen Filtering → None** — already the default; bilinear adds per-frame CPU cost.
+4. **Interframe Blending → Off** — already the default; blending doubles GPU draw calls.
+
+If a game still stutters after the above: the root cause is that mGBA uses a **pure
+interpreter** (no JIT recompiler). A JIT is planned — see [FUTURE.md](FUTURE.md).
+
+---
+
+## Known Issues & Planned Improvements
 
 | Item | Status |
 |---|---|
-| Fast-forward speed ratio (e.g. 2×, 4×) | PSVita FF is unbounded — ratio control requires Qt-side sync changes not present in PSP2 port |
-| Back touch zones (L2/R2/L3/R3 mapping) | mGBA #3054 — not yet wired in rebind UI |
-| ROM browser L/R page skip | mGBA #3039 — upstream GUI feature |
+| Sub-60fps in CPU-heavy GBA scenes | Root cause: no JIT dynarec. Planned — see FUTURE.md |
+| Fast-forward speed ratio (2×, 3×, etc.) | PSVita FF is unbounded; ratio requires core sync changes |
+| Back-touch zone remapping (all 4 zones) | Planned: 1–2 days of work — see FUTURE.md Priority 4 |
+| ROM browser L/R page skip | Planned: ~half a day — see FUTURE.md Priority 5 |
+| OpenGL high-res renderer | Planned after JIT — see FUTURE.md Priority 2 |
 | Custom Vita bubbles | Out of scope |
+
+See [FUTURE.md](FUTURE.md) for the full technical roadmap including JIT and GPU renderer plans.
+
